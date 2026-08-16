@@ -1,0 +1,9 @@
+# Study data — personal records. Pristine schema lives in _template/exams/
+# Leading slash matters: without it this would also swallow _template/exams/
+/exams/
+
+# User-supplied sources — copyright and size
+/_inbox/*
+!/_inbox/README.md
+
+.DS_Store
