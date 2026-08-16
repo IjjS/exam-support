@@ -23,10 +23,108 @@ surface accuracy (say 62%) from real accuracy (say 48%), and that gap is the siz
 
 ---
 
+## 1-1. Skill and file responsibility map
+
+Before changing any skill, check this. Most bugs in this system come from a skill writing a file it does not own.
+
+```
+                    READ                              WRITE
+                    ────────────────────────────      ────────────────────────────
+exam-init           _inbox/ · _sources/ · web         blueprint · format · exam
+                    _template/                        mastery (init) · _active · _registry
+
+exam-harvest        _inbox/ · _sources/ · web         notes/ · notes/_compare/ · _facts
+  └─ subagent       official docs                     notes/{domain}/{topic}.md  ← only this
+                    format.md (limit=14)              harvest-queue · format-drift
+                                                      _registry (own row)
+
+exam-quiz           _active · sessions (limit=15)     mastery · wrongbook · _resolved
+                    mastery · wrongbook · format      sessions · harvest-queue · log/
+                    notes/{5 topics}                  _active (on switch) · _registry (own row)
+                    error-taxonomy (only on a miss)
+
+exam-status         _registry  ·  or the full set     nothing   (--rebuild is the one exception)
+                    for the active exam
+
+exam-comp           wrongbook · notes/ · web          notes/_compare/ · wrongbook (notes column)
+
+exam-desc           grep notes/ · mastery row         nothing   (harvest-queue only if the user agrees)
+
+exam-reset          reset-scope.md                    state/*  after copying to _archive/
+```
+
+### Ownership rules these encode
+
+| File | Sole writer | Why it matters |
+|---|---|---|
+| `blueprint.md` | `exam-init` | Immutable spec. If quiz could write it, coverage and definition would drift apart |
+| `format.md` | `exam-init --format` | Harvest sees drift first but must not act on it — parallel subagents would corrupt it |
+| `state/log/` | `exam-quiz` (append) | Write-only. The moment anything reads it, session cost starts growing with history |
+| `notes/**` | `exam-harvest`, `exam-comp` | Quiz consumes notes; it never produces them, so questions stay freshly generated |
+| `mastery.md` | `exam-quiz` | Proficiency changes only by being tested. Reading a note does not make you better at it |
+
+### Subagent boundary
+
+```mermaid
+flowchart LR
+    M["harvest<br/>main session"] -->|"one topic each"| S1["subagent"]
+    M --> S2["subagent"]
+    M --> S3["subagent"]
+    S1 -->|"writes the file itself"| N[("notes/")]
+    S2 --> N
+    S3 --> N
+    S1 -->|"returns a summary only"| M
+    S2 --> M
+    S3 --> M
+    M -->|"aggregates"| Q[("harvest-queue<br/>format-drift")]
+    S1 -.->|"forbidden"| X["state/**"]
+    style X fill:#5f1f1f,color:#fff
+```
+
+The summary a subagent returns is `{topic id, file path, source count, one line, drift observations}` — never prose.
+
+Two separate reasons for this shape, and both matter:
+
+1. **Context isolation** — a subagent returning note bodies would put 6k of prose back into the main context,
+   defeating the entire point of fanning out
+2. **Write safety** — several subagents editing `harvest-queue.md` at once corrupts it. Only the main session aggregates
+
 ## 2. There is exactly one hot path
 
 Of the seven skills, only `exam-quiz` runs at high frequency (1-3 times a day, on a phone). The rest are rare and are not
 optimization targets. **Every optimization argument is settled by asking: does this affect per-session cost of quiz?**
+
+```mermaid
+flowchart LR
+    subgraph hot ["HOT — every quiz session, ~16k"]
+        direction TB
+        H1["CLAUDE.md 1.2k"]
+        H2["exam-quiz SKILL + rules 3.7k"]
+        H3["format.md 2.8k"]
+        H4["mastery.md 3.4k"]
+        H5["sessions limit=15 · 0.1k"]
+        H6["wrongbook 1.2k"]
+        H7["5 notes 3.0k"]
+    end
+    subgraph cond ["CONDITIONAL"]
+        C1["error-taxonomy 1.2k<br/><i>only when something was missed</i>"]
+        C2["mock-exam.md<br/><i>only on a mock</i>"]
+    end
+    subgraph cold ["COLD — never in a quiz session"]
+        D1["blueprint.md"]
+        D2["state/log/"]
+        D3["_resolved.md"]
+        D4["format-drift.md"]
+        D5["docs/DESIGN.md"]
+        D6["README.md"]
+    end
+    style hot fill:#5f1f1f,color:#fff
+    style cond fill:#5f4a1f,color:#fff
+    style cold fill:#1f3a2f,color:#fff
+```
+
+**Anything moved from COLD to HOT has to justify itself in tokens per session, every session, forever.**
+That is the test a new feature has to pass.
 
 ### Per-session token budget — measured 2026-08-15
 
@@ -63,6 +161,34 @@ But the constant is roughly 70% higher than the design assumed.
 ---
 
 ## 3. Preventing unbounded growth
+
+### The wrong-answer lifecycle
+
+This is the state machine that keeps the hot path flat. Everything expensive drains into a file nobody reads.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Wrong: missed, or correct with ??
+    Wrong --> Active: one line in wrongbook.md<br/>~25 tokens
+    Active --> Active: asked again, missed again<br/>repeat count +1
+    Active --> Streak: correct, confident
+    Streak --> Active: missed, or answered ??<br/>streak resets
+    Streak --> Resolved: three in a row, none tagged ??
+    Resolved --> Active: shows up wrong again later
+    Resolved --> [*]
+
+    note right of Active
+        read every session
+        ceiling 30-60 entries
+    end note
+    note right of Resolved
+        _resolved.md
+        never read by quiz
+    end note
+```
+
+Full question text goes to `state/log/{YYYY-MM}.md` at the moment of grading and is never read again.
+That single decision is what separates a constant-cost system from one that gets slower every week.
 
 ### wrongbook split three ways
 
@@ -192,11 +318,30 @@ Stopping on major is not politeness — it **avoids wasted work writing notes fo
 ### Update path
 
 Harvest runs subagents in parallel, so several agents editing `format.md` at once would corrupt it.
+Observation and application are deliberately different actors.
 
-```
-Subagent    Report observations only (must not modify files)
-Main session  Aggregate → append to state/format-drift.md
-User        Update explicitly via /exam-init --format
+```mermaid
+sequenceDiagram
+    participant S as subagent
+    participant H as harvest (main)
+    participant D as format-drift.md
+    participant U as user
+    participant I as exam-init --format
+    participant F as format.md
+
+    S->>H: {grade, field, observed, source}
+    Note over S,H: observation only —<br/>never writes a file
+    H->>D: append
+    alt minor
+        H->>H: keep collecting
+        H->>U: one line at session end
+    else major
+        H->>H: finish current batch, stop
+        H->>U: "SAP-C03 detected — run /exam-init --format"
+    end
+    U->>I: runs it explicitly
+    I->>F: archive old version, rewrite
+    I->>D: mark entries applied (v4.2)
 ```
 
 On update the previous version is preserved at `_archive/format-{version}-{date}.md`.

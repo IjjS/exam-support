@@ -71,19 +71,34 @@ Handle with two cautions:
   a single question is a lead. If a statute or a statistic is involved, verify against Tier A (`law.go.kr`, `kosis.kr`)
   and let Tier A win
 
-## Tier C — Community explanations and commentary. **Never a fact**
+## Tier C — Format reference only. **Never a fact**
 
-| Content | Allowed use |
+| Source | Allowed use |
 |---|---|
-| `comcbt` 해설, comments, user commentary | ✅ Format analysis, distractor patterns, topic frequency |
+| `comcbt.com` 해설, comments, user commentary | ✅ Format analysis, distractor patterns, topic frequency |
+| **`examtopics.com`** — questions, community answers, discussion | ✅ Format analysis, distractor patterns, topic frequency |
 | | ❌ **Never the factual basis for a note** |
 | | ❌ **Never copied into an explanation** |
+| | ❌ **Never treated as a verified answer key** |
 
-The explanations are user-contributed and demonstrably revised over time. Treating them as fact means memorizing
-something wrong, which is worse than not knowing.
+Read these for **shape**: stem length, option count, single vs multiple response, how requirement keywords are phrased,
+what a plausible distractor looks like. Then close the tab. Nothing read here may end up as a claim in a note.
 
-The split is by **artifact, not by site.** The same page is Tier B for its question and answer key and Tier C for its
-explanation. When only the explanation supports a claim, do not write the note — queue the topic as `unknown` and report it.
+### Why examtopics is C and not B
+
+`comcbt` earned Tier B for its questions and answer keys because they transcribe published Korean past papers and the
+citation (`2024년 3회 78번`) points at a real, identifiable exam sitting.
+
+`examtopics` is different on both counts: the questions are unauthorized reproductions rather than published past
+papers, and the "answer" is a community vote that is frequently contested in the discussion thread right below it.
+A voted answer is not an answer key. **Use it to see what a question looks like, never to learn what is true.**
+
+### The general rule
+
+The split is by **artifact, not by site.** A single page can be Tier B for one part and Tier C for another —
+`comcbt` is B for its question text and C for its explanation.
+
+When only a Tier C source supports a claim, do not write the note. Queue the topic as `unknown` and report it.
 
 One legitimate Tier C use: **topic frequency.** A topic recurring across past papers is a real weighting signal.
 Record it as an observation, not as a fact.
@@ -91,13 +106,16 @@ Record it as an observation, not as a fact.
 ## Forbidden entirely
 
 ```
-Sites claiming "leaked" or "real" exam content beyond published past papers
+Any past-question site not named in Tier B or Tier C above
 Personal blogs · Medium · wiki summaries
 AI-generated summary sites
 Unofficial cheat sheets
 ```
 
 No information beats wrong information.
+
+Note that the Tier C entries are **whitelisted for format only.** Being on the list is not permission to treat their
+content as true — it is permission to look at the shape of their questions. The tier is the constraint, not the listing.
 
 ---
 

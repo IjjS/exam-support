@@ -18,7 +18,7 @@ Designed to be driven from a phone via remote control of this Mac. **Short outpu
 1. **Topic IDs (`T-041`) are permanent** — never reissue, reuse, or delete one. If domains are reorganized, keep the ID and change only the domain column. Mark removed topics `deprecated`; never delete the row. Do not encode the domain into the ID.
 2. **Hot block at the top of state files** — aggregates live in the first 15 lines. Use `Read(limit=N)` instead of loading the whole file.
 3. **`state/log/` is write-only** — it stores full question text. `exam-quiz` must never read it.
-4. **Sources are tiered A/B/C by artifact, not by site** — official docs, statutes, statistics (A) and user files plus **past questions and answer keys from whitelisted sites** (B) may back a note; **community explanations and commentary (C) never can**, they are format analysis only. Record source and date every time. See `exam-harvest/references/source-policy.md`.
+4. **Sources are tiered A/B/C by artifact, not by site** — official docs, statutes, statistics (A) and user files plus **published past papers with answer keys** (B) may back a note; **Tier C (`examtopics.com`, community explanations) never can** — whitelisted for question *shape* only, never for what is true. Record source and date every time. See `exam-harvest/references/source-policy.md`.
 5. **Subagents write files themselves and return only a summary** — never return note bodies into the main context.
 6. **Only `/exam-init --format` may modify `format.md`** — harvest records observations in `state/format-drift.md` and nothing more.
 7. **`blueprint.md` is an immutable spec** — coverage, accuracy, and every mutable value live in `state/mastery.md`. quiz neither reads nor writes blueprint.

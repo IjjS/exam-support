@@ -24,6 +24,68 @@ This system looks at the blind spot through three layers.
 
 ---
 
+## How the pieces fit
+
+Seven skills. Two of them are the loop you actually live in; the rest are there when you need them.
+
+```mermaid
+flowchart TB
+    subgraph once ["once per exam"]
+        INIT["<b>/exam-init</b><br/>find the exam guide<br/>build the topic map<br/>analyze question format"]
+    end
+
+    subgraph loop ["the daily loop"]
+        QUIZ["<b>/exam-quiz</b><br/>ask · grade · record"]
+        HARV["<b>/exam-harvest</b><br/>read official docs<br/>write concept notes"]
+    end
+
+    subgraph aside ["when you need them"]
+        STAT["<b>/exam-status</b><br/>where am I"]
+        COMP["<b>/exam-comp</b><br/>A vs B"]
+        DESC["<b>/exam-desc</b><br/>what is this"]
+        RSET["<b>/exam-reset</b><br/>start over"]
+    end
+
+    INIT -->|"blueprint.md<br/>format.md"| QUIZ
+    QUIZ -->|"topics with no note<br/>land in harvest-queue"| HARV
+    HARV -->|"notes make the<br/>next questions better"| QUIZ
+    QUIZ -.->|"confusion-type<br/>wrong answers"| COMP
+    QUIZ -.-> STAT
+    HARV -.-> STAT
+    STAT -.->|"tells you which<br/>to run next"| QUIZ
+```
+
+**The loop is self-feeding.** Every question asked about a topic with no note queues that topic.
+Harvest drains the queue into notes. The next question on that topic comes from the note instead of the web.
+Quiz gets faster and more accurate the more you use it.
+
+### What a single session does
+
+```mermaid
+flowchart TD
+    A["read state<br/><i>sessions · mastery · wrongbook · format</i>"] --> B{"3 basic<br/>sessions done?"}
+    B -->|"no"| C["<b>basic mode</b><br/>untested topics first<br/>spread by domain weight"]
+    B -->|"yes"| D["<b>weakness mode</b><br/>worst scores + lucky guesses<br/>+ unresolved wrong answers"]
+    C --> E["pick 5 topics"]
+    D --> E
+    E --> F{"does the topic<br/>have a note?"}
+    F -->|"yes"| G["build from the note"]
+    F -->|"no · up to 2 per session"| H["verify on official docs"]
+    F -->|"no · past the cap"| I["build from model knowledge<br/><b>tag UNVERIFIED</b>"]
+    G --> J["present 5 questions"]
+    H --> J
+    I --> J
+    H -.-> Q[("harvest-queue")]
+    I -.-> Q
+    J --> K["you answer:<br/><code>1 3? 2,4?? 5 1</code>"]
+    K --> L{"correct,<br/>but tagged ??"}
+    L -->|"yes"| M["<b>recorded as wrong</b><br/>this is the point"]
+    L -->|"no"| N["normal grading"]
+    M --> O["classify why it was missed"]
+    N --> O
+    O --> P["update state · explain only the misses"]
+```
+
 ## Getting started
 
 ### 1. Register an exam
@@ -167,6 +229,15 @@ Plain `2` every time works fine, but that switches off one of the three layers.
 
 ## Study modes
 
+```mermaid
+flowchart LR
+    S1["session 1<br/>basic"] --> S2["session 2<br/>basic"] --> S3["session 3<br/>basic"]
+    S3 -->|"gate opens"| S4["session 4+<br/><b>weakness</b>"]
+    S4 --> S4
+    M(["mock exam<br/>counts toward the gate"]) -.-> S3
+    style S4 fill:#2d5016,color:#fff
+```
+
 The first three sessions are locked to **basic mode**.
 
 Weakness mode only means something once weaknesses have surfaced, and one or two sessions is too small a sample.
@@ -212,6 +283,64 @@ exams/aws-sap/
 
 Each exam gets its own complete set. A wrong answer on AWS SAP has no effect on CKA.
 
+### Who writes what
+
+```mermaid
+flowchart LR
+    subgraph SK ["skills that write"]
+        direction TB
+        I["/exam-init"]
+        H["/exam-harvest"]
+        Q["/exam-quiz"]
+        C["/exam-comp"]
+        R["/exam-reset"]
+    end
+
+    subgraph FI ["files"]
+        direction TB
+        BP["blueprint.md"]
+        FM["format.md"]
+        NT["notes/"]
+        CM["notes/_compare/"]
+        MA["state/mastery.md"]
+        WB["state/wrongbook.md"]
+        SE["state/sessions.md"]
+        HQ["state/harvest-queue.md"]
+        LG["state/log/"]
+    end
+
+    I --> BP
+    I --> FM
+    I --> MA
+    H --> NT
+    H --> CM
+    H --> HQ
+    Q --> MA
+    Q --> WB
+    Q --> SE
+    Q --> HQ
+    Q --> LG
+    C --> CM
+    R -.-> MA
+    R -.-> WB
+    R -.-> SE
+
+    style BP fill:#1f3a5f,color:#fff
+    style FM fill:#1f3a5f,color:#fff
+    style LG fill:#4a3728,color:#fff
+```
+
+Blue = written once and treated as immutable afterwards. Brown = write-only; nothing ever reads it back.
+`/exam-reset` is dashed because it only ever writes after copying the originals into `_archive/`.
+
+Three rules hold this together:
+
+- **`blueprint.md` is written once and never again** — coverage and accuracy live in `mastery.md`, so quiz never
+  touches the spec
+- **`format.md` changes only through `/exam-init --format`** — harvest may observe a change but never apply one
+- **`state/log/` is write-only** — quiz appends the full question text there and never reads it back,
+  which is what keeps session cost flat no matter how long you study
+
 ---
 
 ## Multiple exams
@@ -237,6 +366,25 @@ Each exam gets its own complete set. A wrong answer on AWS SAP has no effect on 
   Topic IDs are never reissued, so your accumulated history survives a reorganization.
 
 ---
+
+## Other agents
+
+The skills follow the [Agent Skills](https://agentskills.me) open format and live in `.agents/skills/`, which
+Codex and Gemini CLI both read directly. `.claude/skills` is a symlink to the same directory, and `AGENTS.md`
+and `GEMINI.md` are symlinks to `CLAUDE.md` — one copy of everything, three tools.
+
+| | Skills read from | Project instructions | Invoke |
+|---|---|---|---|
+| Claude Code | `.claude/skills/` → link | `CLAUDE.md` | `/exam-quiz`, or just ask |
+| Codex | `.agents/skills/` | `AGENTS.md` → link | `$` prefix or `/skills`, or just ask |
+| Gemini CLI | `.agents/skills/` | `GEMINI.md` → link | `activate_skill`, or just ask |
+
+All three do implicit activation from the skill description, so plain language ("문제 내줘") works everywhere.
+
+Two things differ outside Claude Code: harvest's parallel collection falls back to sequential where subagents
+aren't available (same notes, roughly 3x the wall time), and tool names in the skill bodies are written in
+Claude Code's vocabulary — `Read(limit=15)` means "read only the first 15 lines," which other agents infer
+but do not execute identically.
 
 ## Documents
 

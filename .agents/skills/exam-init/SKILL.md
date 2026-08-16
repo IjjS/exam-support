@@ -122,8 +122,9 @@ Skipping this means generating plausible-looking questions that don't match the 
    - AWS: Exam Guide appendix samples plus the free Skill Builder Official Practice Question Set
    - CNCF: curriculum plus the official exam environment notes
    - Anthropic: official exam information pages
-   - Domestic exams: `comcbt.com` is permitted **for format analysis only** — see `exam-harvest/references/source-policy.md`.
-     Read the question structure; never carry over its explanations, and never cite it in a note
+   - Third-party past-question sites — `comcbt.com` (domestic), `examtopics.com` (vendor) — are permitted
+     **for format analysis only.** Read the question shape; never carry over answers or explanations, and never cite
+     them in a note. See `exam-harvest/references/source-policy.md`
 2. Analyze and fill `format.md` — type mix, stem length, question phrasings, requirement keywords, distractor patterns, prohibitions
 3. **Synthesize two anchors** — never copy originals. Same format, different subject. Different domains, one single-select and one multiple-response
 4. Fill the DRIFT-CHECK block at the top (harvest compares against just those 8 lines)
