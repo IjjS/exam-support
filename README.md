@@ -26,7 +26,8 @@ This system looks at the blind spot through three layers.
 
 ## How the pieces fit
 
-Seven skills. Two of them are the loop you actually live in; the rest are there when you need them.
+Eight skills. Two of them are the loop you actually live in; the rest are there when you need them.
+`/exam-skills` prints the list at any time.
 
 ```mermaid
 flowchart TB
@@ -224,6 +225,7 @@ Plain `2` every time works fine, but that switches off one of the three layers.
 | `/exam-init 자격증명` | Register a new exam |
 | `/exam-init --format` | Refresh the question format spec |
 | `/exam-reset` | Reset state (after backup) |
+| `/exam-skills` | List every skill and what it does |
 
 ---
 

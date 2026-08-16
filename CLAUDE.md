@@ -34,6 +34,9 @@ Designed to be driven from a phone via remote control of this Mac. **Short outpu
 | ~가 뭐야 / 설명해줘 / 이 도메인 뭐야 | `exam-desc` |
 | 새 자격증 / 등록 / 형식 갱신 | `exam-init` |
 | 초기화 / 리셋 / 처음부터 | `exam-reset` |
+| 스킬 뭐 있어 / 명령어 / 도움말 / 뭐 할 수 있어 | `exam-skills` |
+
+`exam-desc` explains the **exam subject**; `exam-skills` explains the **tooling**. Route on which one is being asked about.
 
 ## File roles
 
@@ -66,7 +69,7 @@ exams/{slug}/
 | Access | Skills |
 |---|---|
 | Writes | `exam-init` `exam-harvest` `exam-quiz` `exam-comp` |
-| Read-only | `exam-status` `exam-desc` |
+| Read-only | `exam-status` `exam-desc` `exam-skills` |
 | Confirm first | `exam-reset` (delete only after backup) |
 
 ## Before modifying a skill
