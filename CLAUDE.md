@@ -31,8 +31,8 @@ Designed to be driven from a phone via remote control of this Mac. **Short outpu
 | 문제 내줘 / 퀴즈 / 모의고사 / 시험 | `exam-quiz` |
 | 지금 상태 / 뭐부터 / 커버리지 / D-day | `exam-status` |
 | 노트 만들어 / 자료 수집 / 큐 처리 | `exam-harvest` |
-| A vs B / 차이 / 뭘 골라야 / 비교 | `exam-comp` |
-| ~가 뭐야 / 설명해줘 / 이 도메인 뭐야 | `exam-desc` |
+| A vs B / 차이 / 뭘 골라야 / 비교 / 뭐랑 헷갈리지 | `exam-comp` |
+| ~가 뭐야 / 설명해줘 / 이 도메인 뭐야 / 그때 문제 | `exam-desc` |
 | 새 자격증 / 등록 / 형식 갱신 | `exam-init` |
 | 초기화 / 리셋 / 처음부터 | `exam-reset` |
 | 스킬 뭐 있어 / 명령어 / 도움말 / 뭐 할 수 있어 | `exam-skills` |

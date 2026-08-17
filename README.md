@@ -235,10 +235,12 @@ Plain `2` every time works fine, but that switches off one of the three layers.
 | `/exam-harvest` | Turn queued topics into notes |
 | `/exam-harvest D2` | By domain |
 | `/exam-comp SCP vs IAM policy` | Build or show a comparison table |
+| `/exam-comp Snowball` | One concept → finds what it gets confused with, then compares |
 | `/exam-comp 하이브리드 연결` | Three or more options becomes a decision guide |
 | `/exam-comp` | No argument → list the wrong answers that need comparison tables |
 | `/exam-desc Transit Gateway` | Explain a concept from your notes |
 | `/exam-desc 상권분석` | Explain a whole domain — what it covers and how it is weighted |
+| `/exam-desc W-001` | Pull a past question back out of the log |
 | `/exam-init 자격증명` | Register a new exam |
 | `/exam-init --format` | Refresh the question format spec |
 | `/exam-reset` | Reset state (after backup) |

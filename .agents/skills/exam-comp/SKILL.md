@@ -1,6 +1,6 @@
 ---
 name: exam-comp
-description: Build or show comparison tables and decision guides for concepts that get confused. Use when the user says "A랑 B 차이", "SCP vs IAM policy", "뭘 골라야 해", "비교해줘", "언제 뭘 쓰지", or "comp". Called with no argument, it pulls the confusion-type entries out of the wrong-answer book and lists what needs a comparison table. Tables are saved under notes/_compare/ and reused as question sources.
+description: Build or show comparison tables and decision guides for concepts that get confused. Use when the user names a pair ("SCP vs IAM policy", "A랑 B 차이"), a single concept they are unsure about ("Snowball 비교해줘", "이거 뭐랑 헷갈리지"), or a theme with several options ("하이브리드 연결", "뭘 골라야 해", "언제 뭘 쓰지", "comp"). Given one concept it finds what that concept gets confused with. Called with no argument, it lists the confusion-type entries in the wrong-answer book that need a table. Tables are saved under notes/_compare/ and reused as question sources.
 ---
 
 # exam-comp
@@ -15,6 +15,7 @@ boundary is blurry, so one line of distinguishing criteria often settles it.
 | Call | Behavior |
 |---|---|
 | `/exam-comp SCP vs IAM policy` | Pairwise table → `_compare/vs-{a}-{b}.md` |
+| `/exam-comp Snowball` | **Single concept** → find what it gets confused with, then compare |
 | `/exam-comp 하이브리드 연결` | Three or more options → decision guide `_compare/choose-{topic}.md` |
 | `/exam-comp` | **List what needs a comparison table** |
 
@@ -45,6 +46,45 @@ half-written, and it is the cheapest weakness in the book to close.
 
 Show the origin mix rather than a single count — `애매 2회` and `오답 2회` call for different depth.
 
+## Phase 0-1 — One concept given: find the neighborhood
+
+When the user names a single concept rather than a pair or a theme, **the comparison set is yours to find.**
+Not knowing what it gets confused with is usually the actual problem — if they knew, they would have named a pair.
+
+Look locally, in this order, and stop once you have 2-4 neighbors:
+
+| Order | Source | Why |
+|---|---|---|
+| 1 | The topic note's `Easily confused with` table | harvest writes that section for exactly this purpose |
+| 2 | `state/wrongbook.md` — what the user actually confused it with | their own error outranks textbook similarity |
+| 3 | Sibling topics in the same domain, `grep "\| D4 \|" state/mastery.md` | cheap, and scoped to the exam |
+
+Source 2 leads. If they picked Snowmobile over Snowball on a past question, that pair goes first no matter
+what the note lists.
+
+### Do not reach for the web on your own
+
+All three sources above are local and free. Official docs and model knowledge are **not** a fourth step —
+they are a separate request. If 1-3 turn up fewer than two neighbors, say so and ask:
+
+```
+Snowball 노트가 없고 오답 이력도 없습니다.
+공식 문서에서 비교 대상을 찾아볼까요?
+```
+
+A one-word command should not silently turn into a web crawl.
+
+### State the set before building
+
+One line, so a wrong guess costs nothing to correct — and so the user can see what the build will involve:
+
+```
+Snowball 기준으로 Snowcone · Snowmobile · DataSync 와 비교합니다
+(노트 1/3 — 나머지 2개는 공식 문서 확인이 필요합니다)
+```
+
+Then continue at Phase 1 with those targets. One neighbor → `vs-{a}-{b}.md`; two or more → `choose-{topic}.md`.
+
 ## Phase 1 — Sourcing
 
 ```
@@ -55,6 +95,9 @@ Show the origin mix rather than a single count — `애매 2회` and `오답 2�
 
 Unlike `exam-quiz`, there is **no web fallback cap.** This is a low-frequency skill and a comparison table gets reused
 for a long time, so accuracy wins.
+
+This is about **filling in targets you already have**, and does not contradict Phase 0-1. Discovering *who* to
+compare against stays local and asks first; researching *what distinguishes* an agreed set goes to the web freely.
 
 ## Phase 2 — Authoring
 

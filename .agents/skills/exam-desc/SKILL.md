@@ -72,7 +72,9 @@ D2 상권분석   출제비중 22% (90문항 중 20문항)
 ```
 
 - Explain what the domain is *about* first; the topic list is supporting detail
-- Never print all 23-37 topic names. Group them into 3-5 강줄기
+- Never print all 23-37 topic names unprompted. Group them into 3-5 강줄기
+- **If the user explicitly asks for the full list** (`"토픽 다 보여줘"`), give it — one line per topic with its
+  status badge, still grouped by 갈래 so it stays scannable
 - Exam weight is worth one line — it tells the user how much to invest
 
 ### Free-form theme
