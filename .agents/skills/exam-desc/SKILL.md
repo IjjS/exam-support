@@ -1,6 +1,6 @@
 ---
 name: exam-desc
-description: Explain a concept, a topic, or a whole exam domain. Use when the user asks what something is or how it works — "Transit Gateway가 뭐야", "SCP 설명해줘", "상권분석이 뭐야", "이 도메인 뭐 배우는거야", "이거 무슨 개념이야", or "desc". Answers from the study notes where they exist, otherwise from official documentation. Read-only.
+description: Explain a concept, a topic, a whole exam domain, or a specific past question. Use when the user asks what something is or how it works — "Transit Gateway가 뭐야", "SCP 설명해줘", "상권분석이 뭐야", "이 도메인 뭐 배우는거야", "desc" — or points at a wrong-answer entry and wants the original question back, "W-001 그때 문제 뭐였어", "이거 왜 틀렸더라". Answers from the study notes where they exist, otherwise from official documentation. Read-only.
 ---
 
 # exam-desc
@@ -98,6 +98,34 @@ Rules:
 
 The user asked what something is. Turning that into a progress report is the failure mode this section exists to prevent.
 
+## Looking up a past question
+
+When the user points at a specific wrongbook entry — `"W-001 그때 문제 뭐였어"`, `"이거 왜 틀렸더라"` while
+reading the wrongbook, or names a topic and asks for the actual question — you may read `state/log/`.
+
+**This is the only skill allowed to read the log, and only for an entry the user named.**
+
+### Bounded lookup — never read the file whole
+
+A month of logs runs to tens of thousands of tokens. Reading it whole to find one question would be absurd.
+
+```
+1. wrongbook row → the `First` date tells you which month file
+2. grep -n "W-001" exams/{slug}/state/log/2026-*.md     → line numbers only
+3. read from that line with a limit of ~40 lines         → one question block
+```
+
+- A repeated entry hits in several months. Read each hit's window, still bounded — do not widen the range
+- More than 3 hits: show the list of sittings and let the user pick
+- **Never read a log file without an offset and a limit.** If grep returns nothing, say so; do not fall back to
+  scanning
+
+### What to do with it
+
+Show the question, the user's answer, and the correct answer. Then explain **fresh** — using current notes,
+not the verdict lines stored at the time. Notes written since then make for a better explanation than the
+one recorded that day.
+
 ## Phase 4 — When there is no note
 
 **Explain anyway.** Do not stop to do bookkeeping.
@@ -113,6 +141,8 @@ If the concept is not in the blueprint either, say it may be outside the exam sc
 
 ## Never
 
+- Read a log file without both an offset and a limit
+- Read the log at all unless the user named a specific entry
 - Lead with, or dwell on, study history
 - Print a stats block, coverage, or session counts
 - Dump a note file verbatim, or list every topic in a domain

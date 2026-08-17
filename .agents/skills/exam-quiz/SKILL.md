@@ -172,7 +172,31 @@ A book created before origin tracking has no `origin` or `Streak` column. Do not
 Say in one line that the format was extended. Never guess an origin for a past entry — the information was
 not recorded, and inventing it would corrupt the one dataset that cannot be regenerated.
 
-### Handling entries that go to the wrongbook
+### Explanations — every option, one line each
+
+**Every question gets a verdict on every option**, including questions answered correctly.
+Knowing why the other four fail is the discrimination the exam actually tests.
+
+```
+Q3   정답 4   내 답 2 ✗
+
+  1  ✗  리전 간 전이 라우팅 불가
+  2  ✗  동작은 하나 운영부담 큼 — "LEAST operational overhead" 위반
+  3  ✗  DX는 구축에 수 주 — "quickly" 위반
+  4  ✓  TGW + VPN. 요구조건 3개 충족
+  5  ✗  실재하지 않는 조합
+```
+
+- **One line per option. No prose, no paragraph under any option.** The fixed shape is what keeps this
+  readable on a phone and what stops explanations from expanding
+- Name the reason, not just the verdict. `"운영부담 위반"` beats `"틀림"`; where a distractor pattern applies
+  (`D1` legacy bait, `D2` over-engineering …) name it — the pattern is more memorable than the instance
+- Show `내 답` only when it differs from the answer
+- For multiple response, mark every correct option `✓`
+
+If the user asks for depth on a specific question after seeing this, give it then. Do not pre-empt it.
+
+### Classifying what goes in the wrongbook
 
 For every `miss`, `lucky`, and `shaky` entry, **read `_spec/error-taxonomy.md`** and assign a type.
 Skip that read entirely if all five were confident and correct.
@@ -180,23 +204,13 @@ Skip that read entirely if all five were confident and correct.
 `shaky` almost always classifies as `confusion` — "I narrowed it to two" is the definition of a blurred
 boundary. If the user names the other option they were weighing, record the pair; it becomes an `exam-comp` candidate.
 
-Explanations:
-
-| | Explain? |
-|---|---|
-| `miss` · `lucky` | **Yes, 3-5 lines** — why the answer is right, why their pick is not |
-| `shaky` | **One line** — just the discriminator that separates it from the option they hesitated over |
-| confident + correct | Nothing |
-
-A shaky answer does not need a full explanation. It needs the one sentence that would have made it confident.
-
 ## Phase 5 — Recording
 
 Update the following, **in order**.
 
 | File | Update |
 |---|---|
-| `state/log/{YYYY-MM}.md` | Append full question, options, user answer, correct answer, explanation (**write-only**) |
+| `state/log/{YYYY-MM}.md` | Append full question, options, user answer, correct answer, per-option verdicts (**write-only**) |
 | `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score**. Refresh the hot block |
 | `state/wrongbook.md` | Add one line per `miss` / `lucky` / `shaky`, with its origin. Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md`. Refresh the hot block |
 | `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) |
@@ -204,6 +218,19 @@ Update the following, **in order**.
 | `exams/_registry.md` | Update this slug's coverage, accuracy, session count |
 
 **Do not modify `blueprint.md`.**
+
+### Log heading — the anchor that makes the log searchable
+
+Lead every logged question with its wrongbook ID when it has one. This is what lets `exam-desc` jump straight to
+one question later instead of scanning the file.
+
+```
+### Q3 — W-001 · T-034 · D2 · Database replication · hard · single
+```
+
+- `W-id` first, when the question produced or repeated a wrongbook entry. Omit it for confident-correct answers
+- A re-asked entry keeps the **same `W-id`** across months — that is deliberate, it gives the entry a history
+- The ID costs nothing to write; you already assigned it while updating `wrongbook.md`
 
 ## Phase 6 — Wrap-up, 3 lines or fewer (Korean)
 

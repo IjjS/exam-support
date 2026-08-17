@@ -203,8 +203,9 @@ the score does not.
 `shaky` retires after two confident answers rather than three. The evidence of not-knowing is weaker, and holding
 it to the same bar would inflate the one file quiz reads on every single session.
 
-Full question text goes to `state/log/{YYYY-MM}.md` at the moment of grading and is never read again.
+Full question text goes to `state/log/{YYYY-MM}.md` at the moment of grading and is never read **in the loop**.
 That single decision is what separates a constant-cost system from one that gets slower every week.
+(`exam-desc` can retrieve one entry on request — see below.)
 
 ### wrongbook split three ways
 
@@ -213,11 +214,26 @@ An AWS SAP stem runs 100-150 words. Storing a wrong answer with full question te
 
 ```
 state/wrongbook.md      Active wrong-answer index (one line ≈ 25 tokens) — quiz reads this
-state/_resolved.md      Moved here after three consecutive correct answers — quiz does not read it
-state/log/{YYYY-MM}.md  Full question text and explanations — quiz never reads it (audit trail)
+state/_resolved.md      Retired entries — quiz does not read it
+state/log/{YYYY-MM}.md  Full question text and per-option verdicts — quiz never reads it
 ```
 
 Active entries leave the index when resolved, so the realistic ceiling is 30-60 entries.
+
+### The log is archival, not sealed
+
+"Write-only" is a rule about the **loop**, not a prohibition. What must never happen is a per-session read that
+grows with history. A one-off lookup the user explicitly asked for costs nothing per session.
+
+So `exam-desc` may open the log for a named entry. Two things make that safe:
+
+- **Log headings carry the wrongbook ID** — `### Q3 — W-001 · T-034 · …`. quiz already knows the ID when it
+  writes the row, so the anchor is free. Lookup becomes `grep -n` plus a 40-line window: an index hit, not a scan
+- **Reading a log file without an offset and a limit is forbidden**, in the skill and here
+
+Why bother: the wrongbook's one-line core answers "what concept did I get wrong," which is usually enough.
+It cannot answer "what did the question actually say" — and for `misread` errors, the wording of the stem
+*is* the lesson. That is the case this path exists for.
 
 ### Hot block on top + `Read(limit=N)`
 

@@ -349,7 +349,7 @@ flowchart LR
     style LG fill:#4a3728,color:#fff
 ```
 
-Blue = written once and treated as immutable afterwards. Brown = write-only; nothing ever reads it back.
+Blue = written once and treated as immutable afterwards. Brown = never read during a study session.
 `/exam-reset` is dashed because it only ever writes after copying the originals into `_archive/`.
 
 Three rules hold this together:
@@ -357,8 +357,9 @@ Three rules hold this together:
 - **`blueprint.md` is written once and never again** — coverage and accuracy live in `mastery.md`, so quiz never
   touches the spec
 - **`format.md` changes only through `/exam-init --format`** — harvest may observe a change but never apply one
-- **`state/log/` is write-only** — quiz appends the full question text there and never reads it back,
-  which is what keeps session cost flat no matter how long you study
+- **`state/log/` is write-only in the loop** — quiz appends the full question text and never reads it back,
+  which is what keeps session cost flat no matter how long you study. You can still pull one question back out:
+  point at a wrong-answer entry and `/exam-desc` fetches just that block by its ID
 
 ---
 

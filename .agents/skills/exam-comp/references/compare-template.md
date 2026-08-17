@@ -39,8 +39,11 @@ MOST cost-effective + two VPCs          →  Peering
 
 ### "My error history"
 
-Find this pair's wrong answers in `state/wrongbook.md` and `state/log/` and include them.
-**A comparison table with your own mistakes in it sticks better than a generic one.**
+Pull this pair's entries out of `state/wrongbook.md` — the one-line core and the Notes column are exactly what
+this section needs. **A comparison table with your own mistakes in it sticks better than a generic one.**
+
+**Do not open `state/log/`.** Only `exam-desc` reads it, and only for an entry the user named. A comparison table
+needs the lesson, not the original stem; if the exact question matters, the user can ask `exam-desc` for it.
 
 Omit the section entirely if there is nothing. Never leave an empty heading.
 

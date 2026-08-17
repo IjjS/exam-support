@@ -10,14 +10,15 @@ Designed to be driven from a phone via remote control of this Mac. **Short outpu
   they illustrate shape, not language.
 - The language of questions and answer options is set by the anchors in `format.md`, per exam. It follows the exam,
   not the conversation: a Korean-language exam gets Korean questions even when the conversation is English.
-- Format for a phone screen. Tables at most 3 columns. Explain only the questions the user got wrong, in 3-5 lines.
+- Format for a phone screen. Tables at most 3 columns.
+- Quiz explanations: **every option gets a one-line verdict, on every question.** No prose blocks. Depth only if asked.
 - All study data lives under `exams/{slug}/`. **Never cross-reference between exams.**
 
 ## Absolute rules
 
 1. **Topic IDs (`T-041`) are permanent** — never reissue, reuse, or delete one. If domains are reorganized, keep the ID and change only the domain column. Mark removed topics `deprecated`; never delete the row. Do not encode the domain into the ID.
 2. **Hot block at the top of state files** — aggregates live in the first 15 lines. Use `Read(limit=N)` instead of loading the whole file.
-3. **`state/log/` is write-only** — it stores full question text. `exam-quiz` must never read it.
+3. **`state/log/` is write-only in the loop** — `exam-quiz` must never read it, at all. `exam-desc` may, only for an entry the user named, and only with grep-then-bounded-read. Log headings carry the `W-id` so that lookup is an index hit, not a scan.
 4. **Sources are tiered A/B/C by artifact, not by site** — official docs, statutes, statistics (A) and user files plus **published past papers with answer keys** (B) may back a note; **Tier C (`examtopics.com`, community explanations) never can** — whitelisted for question *shape* only, never for what is true. Record source and date every time. See `exam-harvest/references/source-policy.md`.
 5. **Subagents write files themselves and return only a summary** — never return note bodies into the main context.
 6. **Only `/exam-init --format` may modify `format.md`** — harvest records observations in `state/format-drift.md` and nothing more.
@@ -60,7 +61,7 @@ exams/{slug}/
     sessions.md      Session log (aggregates on top, used for mode gating)
     harvest-queue.md Topics awaiting notes
     format-drift.md  Observed exam-format changes
-    log/{YYYY-MM}.md Full question text (write-only)
+    log/{YYYY-MM}.md Full question text, W-id anchored (quiz never reads; desc on request only)
     _archive/        Reset backups, superseded format versions
 ```
 
