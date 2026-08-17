@@ -72,5 +72,14 @@ Record start and end times to report elapsed time. Skip it if the user does not 
 Same state updates as a normal session, with these differences:
 
 - Mode in `sessions.md` is `mock` → **counts toward basic_done** (helps unlock weakness mode)
-- Append every question to `state/log/{YYYY-MM}.md`
 - There are many mastery rows to touch — apply them **once at the end of the session**, not per batch
+
+### Log each batch as it is presented
+
+This matters more here than in a normal session. Thirty questions is roughly **13,000 tokens** of question text;
+holding all of it for a single write at the end puts a very long pause between the last answer and the score.
+
+Write each batch's question block to `state/log/{YYYY-MM}.md` **right after presenting that batch**, while the
+user works through it. By the final batch, everything but the result lines is already on disk.
+
+Then, after grading: print the report first, and issue the remaining writes in parallel.

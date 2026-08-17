@@ -114,8 +114,11 @@ A month of logs runs to tens of thousands of tokens. Reading it whole to find on
 ```
 1. wrongbook row → the `First` date tells you which month file
 2. grep -n "W-001" exams/{slug}/state/log/2026-*.md     → line numbers only
-3. read from that line with a limit of ~40 lines         → one question block
+3. read a window that STARTS ABOVE the match             → offset = line-30, limit 45
 ```
+
+The `W-id` lives on the result line, which sits **below** the question it belongs to. Reading forward from the
+match gets you the verdicts without the stem. Start roughly 30 lines above it.
 
 - A repeated entry hits in several months. Read each hit's window, still bounded — do not widen the range
 - More than 3 hits: show the list of sittings and let the user pick

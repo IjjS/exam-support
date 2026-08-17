@@ -410,6 +410,51 @@ so the next session only has to sort — no full recomputation.
 
 ---
 
+## 8-1. Latency after the answer is submitted
+
+Measured on Codex: **2m30s** between submitting five answers and seeing the grade. The work itself was not the
+problem — the ordering was.
+
+Everything ran before the user saw anything: grade, write the full question text to the log, update mastery,
+wrongbook, sessions, the harvest queue, the registry, then finally print the result. One session's log block
+measured **2,174 tokens**, all of it emitted while the user stared at a spinner waiting for a score.
+
+Three changes, in order of how much they save:
+
+### Write the questions to the log during thinking time
+
+The question text is known the moment the questions are presented. Writing it then costs the user nothing —
+they are about to spend minutes solving. Writing it after they submit puts 2,000 tokens directly in front of the
+answer they are waiting for.
+
+Phase 3 writes the question block. Phase 5 appends a short result line. Roughly **2,000 tokens leave the
+critical path** and land in time the user was spending anyway.
+
+This costs one thing: the wrongbook ID does not exist yet at presentation time, so the log heading uses a
+session-question ref (`S12-Q3`) and the `W-id` arrives on the result line below the question. Lookups therefore
+read a window that starts *above* the grep match.
+
+### Print the result before touching any file
+
+The verdicts are what the user is waiting for. Any write placed ahead of them is dead time. Emit the graded
+output as text, then write — the user reads while the files update.
+
+### Issue the six writes in parallel
+
+They touch six different files and none reads another's output, so sequencing them multiplies the wait for
+nothing. The only thing to settle first is the `W-id`, which is a decision rather than a file read.
+
+### Result
+
+| | Before | After |
+|---|---|---|
+| Emitted before the user sees a grade | ~3,360 tokens | **~400**, streamed |
+| Emitted after | — | ~890, parallel |
+| Log write | post-answer, 2,174 | pre-answer, off the clock |
+
+Nothing was removed. The same records get written; they are just no longer standing between the user and
+their score.
+
 ## 9. Web fallback limit
 
 Three-tier sourcing for questions:

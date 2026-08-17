@@ -101,6 +101,22 @@ Q2. (Choose TWO) [stem]
 답변: 문항 순서대로 한 줄로. `?`=애매, `??`=찍음, 복수선택은 `2,4`
 ```
 
+### Log the questions now, before the user answers
+
+Immediately after emitting the questions, append the question block to `state/log/{YYYY-MM}.md`.
+
+**Do this here, not after grading.** The user is about to spend minutes reading and solving; a write issued now
+costs them nothing. The same write issued after they submit is roughly 2,000 tokens sitting directly in front of
+the answer they are waiting for.
+
+Heading carries a session-question ref, since no wrongbook ID exists yet:
+
+```
+### S12-Q3 — T-034 · D2 · Database replication · hard · single · [UNVERIFIED]
+```
+
+Write the stem, the options, and nothing else. Verdicts and the `W-id` come later as a short delta.
+
 ### ⛔ The answer-syntax line must not carry answers
 
 **Print the 답변 line exactly as written above. Never build a worked example of the full answer string.**
@@ -206,11 +222,25 @@ boundary. If the user names the other option they were weighing, record the pair
 
 ## Phase 5 — Recording
 
-Update the following, **in order**.
+### Show the results before writing anything
+
+**Emit the graded output as text first.** Only then touch files.
+
+The user has been waiting since they hit send; the verdicts are what they are waiting for, and every file write
+placed ahead of them is dead time. Once the results are on screen they start reading, and the writes happen
+underneath that.
+
+### Then issue the writes together, not in sequence
+
+These six touch six different files and **none of them reads another's output**. Issue them as parallel tool
+calls in a single step. Sequencing them multiplies the wait for no benefit.
+
+The one thing to settle *before* writing is the `W-id` for each new wrongbook entry — the log delta and the
+wrongbook row both reference it. That is a decision, not a file read, so it does not force an order.
 
 | File | Update |
 |---|---|
-| `state/log/{YYYY-MM}.md` | Append full question, options, user answer, correct answer, per-option verdicts (**write-only**) |
+| `state/log/{YYYY-MM}.md` | **Short delta only** — the question block is already there from Phase 3. Append one result line per question: answer, the user's pick, confidence, `W-id`, per-option verdicts |
 | `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score**. Refresh the hot block |
 | `state/wrongbook.md` | Add one line per `miss` / `lucky` / `shaky`, with its origin. Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md`. Refresh the hot block |
 | `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) |
@@ -219,18 +249,23 @@ Update the following, **in order**.
 
 **Do not modify `blueprint.md`.**
 
-### Log heading — the anchor that makes the log searchable
+### The log result line — the anchor that makes the log searchable
 
-Lead every logged question with its wrongbook ID when it has one. This is what lets `exam-desc` jump straight to
-one question later instead of scanning the file.
+The question block went in during Phase 3 under `### S12-Q3 — T-034 · …`. The delta closes it:
 
 ```
-### Q3 — W-001 · T-034 · D2 · Database replication · hard · single
+**결과**  정답 4 · 내 답 2 ✗ · W-001 · confusion
+  1 ✗ 리전 간 전이 라우팅 불가
+  2 ✗ 동작은 하나 운영부담 큼 — "LEAST operational overhead" 위반
+  3 ✗ DX는 구축에 수 주 — "quickly" 위반
+  4 ✓ TGW + VPN. 요구조건 3개 충족
+  5 ✗ 실재하지 않는 조합
 ```
 
-- `W-id` first, when the question produced or repeated a wrongbook entry. Omit it for confident-correct answers
-- A re-asked entry keeps the **same `W-id`** across months — that is deliberate, it gives the entry a history
-- The ID costs nothing to write; you already assigned it while updating `wrongbook.md`
+- The `W-id` on the result line is what `exam-desc` greps for. It sits **below** the question, so a lookup reads a
+  window that starts above the match
+- Omit the `W-id` for confident-correct answers — nothing to look up later
+- A re-asked entry keeps the **same `W-id`** across months, which is what gives the entry a history
 
 ## Phase 6 — Wrap-up, 3 lines or fewer (Korean)
 
