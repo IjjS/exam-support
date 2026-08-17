@@ -7,6 +7,6 @@
 resolved: 0
 ```
 
-| ID | Topic ID | Type | First | Resolved | Sessions taken |
-|---|---|---|---|---|---|
-| | | | | | |
+| ID | Topic ID | origin | Type | First | Resolved | Sessions taken |
+|---|---|---|---|---|---|---|
+| | | | | | | |

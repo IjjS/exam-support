@@ -27,17 +27,23 @@ Reinforce it only if it is thin or the user asks for an update.
 
 Read `state/wrongbook.md` and pull the `confusion` entries.
 
+**`shaky` entries belong at the top of this list.** An answer tagged `?` means the user narrowed it to two and
+guessed between them — and the Notes column often records exactly which two. That is a comparison table already
+half-written, and it is the cheapest weakness in the book to close.
+
 ```
 비교표가 필요한 항목
 
-1. TGW vs VPC Peering        오답 3회  (T-041)
-2. SCP vs IAM policy         오답 2회  (T-052)
-3. Aurora Global vs Replica  찍맞 2회  (T-018)
+1. TGW vs VPC Peering        애매 2회 · 오답 1회  (T-041)   ← 후보가 기록돼 있음
+2. SCP vs IAM policy         오답 2회             (T-052)
+3. Aurora Global vs Replica  찍맞 2회             (T-018)
 
 이미 있는 표: vs-nlb-vs-alb, vs-sqs-vs-sns
 
 번호를 고르거나 직접 말해주세요.
 ```
+
+Show the origin mix rather than a single count — `애매 2회` and `오답 2회` call for different depth.
 
 ## Phase 1 — Sourcing
 

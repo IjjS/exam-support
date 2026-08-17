@@ -83,7 +83,18 @@ When bringing back an active wrong answer:
 - Always move the correct option to a different position
 - For `confusion` errors, **put the confused pair in the same option set** to force the distinction
 
-Three consecutive correct answers retires it to `_resolved.md`. **A `??` on any of the three breaks the streak.**
+### Retiring an entry
+
+A streak only advances on a **confident correct** answer. Any `?` or `??` resets it to zero — the entry is in the
+book precisely because certainty is what is missing.
+
+| origin | Streak needed |
+|---|---|
+| `miss` · `lucky` | **3** consecutive confident correct |
+| `shaky` | **2** consecutive confident correct |
+
+Shaky clears faster on purpose. The evidence of not-knowing is weaker to begin with, and holding these to the same
+bar as real misses would bloat the active list, which quiz reads every session.
 
 ---
 

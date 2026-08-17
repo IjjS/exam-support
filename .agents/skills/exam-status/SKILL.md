@@ -53,6 +53,7 @@ AWS SAP-C02   D-42   세션 12회 (진단 3 · 약점 9)
   T-052  SCP vs IAM         찍맞 2회
   T-018  Aurora Global      2연속 오답 · 암기누락
 
+오답노트  15건 = 오답 7 · 찍맞 3 · 애매 5
 오답유형  개념혼동 7 · 문제해석 5 · 지식부재 3
 놓친키워드  LEAST operational overhead 4회
 
@@ -65,6 +66,8 @@ AWS SAP-C02   D-42   세션 12회 (진단 3 · 약점 9)
 - **Always show the gap between real and surface accuracy.** That gap is the size of the blind spot, and it is why this system exists
 - Distinguish domains heavy in ⬜ as "unexplored," not "weak." They are different conditions
 - Sort the weakness top 3 by the score column in `mastery.md` (do not recompute)
+- **Break the wrongbook down by origin** — `오답`, `찍맞`, `애매` need different responses.
+  A book that is mostly `애매` means comparison tables; mostly `오답` means notes
 - The last two lines are **runnable commands**, not advice — something the user can copy and type
 
 ## Warning conditions

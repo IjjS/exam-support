@@ -79,12 +79,15 @@ flowchart TD
     H -.-> Q[("harvest-queue")]
     I -.-> Q
     J --> K["you answer:<br/><code>1 3? 2,4?? 5 1</code>"]
-    K --> L{"correct,<br/>but tagged ??"}
-    L -->|"yes"| M["<b>recorded as wrong</b><br/>this is the point"]
-    L -->|"no"| N["normal grading"]
-    M --> O["classify why it was missed"]
+    K --> L{"confidence tag?"}
+    L -->|"?? correct"| M["<b>scored wrong</b> · book as lucky"]
+    L -->|"? correct"| S["scored correct · <b>book as shaky</b>"]
+    L -->|"wrong"| N["scored wrong · book as miss"]
+    L -->|"confident correct"| Z["nothing to do"]
+    M --> O["classify why"]
+    S --> O
     N --> O
-    O --> P["update state · explain only the misses"]
+    O --> P["update state · explain only what went in the book"]
 ```
 
 ## Getting started
@@ -200,7 +203,21 @@ The number of question marks is how unsure you are.
 | `2,4` | Multiple response (Choose TWO) |
 | `2,4??` | Multiple response, guessed |
 
-**A question answered `??` is recorded as wrong even when the answer is correct.**
+**Every question mark puts the topic in the wrong-answer book**, whether or not you got it right.
+
+| You typed | Scored as | Goes in the book | Clears after |
+|---|---|---|---|
+| `2` | correct | no | — |
+| `2?` | **correct** | **yes** — `shaky` | 2 confident correct |
+| `2??` | **wrong** | yes — `lucky` | 3 confident correct |
+| wrong answer | wrong | yes — `miss` | 3 confident correct |
+
+Scoring and reviewing are separate decisions. A `?` answer was genuinely correct, so it counts in your accuracy —
+but you narrowed it to two and won a coin flip, which is not the same as knowing it. It comes back until you
+answer it twice without hesitating.
+
+Any `?` or `??` resets the streak. The entry is there because certainty is what was missing.
+
 The more honestly you attach question marks, the more accurate the system gets.
 Plain `2` every time works fine, but that switches off one of the three layers.
 

@@ -15,11 +15,18 @@ Hence three layers.
 | Layer | Mechanism | Where it lives |
 |---|---|---|
 | 1 | Coverage map (⬜ untested tracking) | topic expansion in `blueprint.md` + coverage in `mastery.md` |
-| 2 | Confidence tags (lucky guess = wrong) | answer parsing in `exam-quiz` + `mastery.lucky` |
+| 2 | Confidence tags — any hesitation enters the review queue | answer parsing in `exam-quiz` · `mastery.lucky` · `wrongbook.origin` |
 | 3 | Error type classification | `_spec/error-taxonomy.md` |
 
-Layer 2 is the experimental hypothesis of this system. Treating "correct but `??`" as wrong splits
-surface accuracy (say 62%) from real accuracy (say 48%), and that gap is the size of the blind spot.
+Layer 2 is the experimental hypothesis of this system, and it does two separate jobs.
+
+**Scoring**: `??` counts as wrong. That splits surface accuracy (say 62%) from real accuracy (say 48%),
+and the gap is the size of the blind spot.
+
+**Queueing**: `?` *and* `??` both enter the wrongbook, regardless of whether the answer was right.
+The queue asks "would I get this again without hesitating?", which is a lower bar than "did I get it right"
+and a different question from "do I know it." Conflating the two would either punish the score for
+answers that were genuinely correct, or let hesitation go untracked. It does neither.
 
 ---
 
@@ -168,24 +175,33 @@ This is the state machine that keeps the hot path flat. Everything expensive dra
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Wrong: missed, or correct with ??
-    Wrong --> Active: one line in wrongbook.md<br/>~25 tokens
-    Active --> Active: asked again, missed again<br/>repeat count +1
-    Active --> Streak: correct, confident
-    Streak --> Active: missed, or answered ??<br/>streak resets
-    Streak --> Resolved: three in a row, none tagged ??
-    Resolved --> Active: shows up wrong again later
+    [*] --> Active: miss — answered wrong
+    [*] --> Active: lucky — correct with ??
+    [*] --> Active: shaky — correct with ?
+    Active --> Active: asked again, uncertain again<br/>repeat +1, streak resets
+    Active --> Streak: confident correct
+    Streak --> Active: any ? or ?? resets it
+    Streak --> Resolved: miss/lucky ×3 · shaky ×2
+    Resolved --> Active: resurfaces later
     Resolved --> [*]
 
     note right of Active
+        one line, ~25 tokens
         read every session
-        ceiling 30-60 entries
     end note
     note right of Resolved
         _resolved.md
         never read by quiz
     end note
 ```
+
+Three origins enter the same queue but carry different weight. `lucky` is scored as a wrong answer because a guess
+that landed is not knowledge. `shaky` is scored as **correct** — it was correct — yet still queued, because
+narrowing to two and winning the coin flip is not the same as knowing. Only the review queue treats them alike;
+the score does not.
+
+`shaky` retires after two confident answers rather than three. The evidence of not-knowing is weaker, and holding
+it to the same bar would inflate the one file quiz reads on every single session.
 
 Full question text goes to `state/log/{YYYY-MM}.md` at the moment of grading and is never read again.
 That single decision is what separates a constant-cost system from one that gets slower every week.

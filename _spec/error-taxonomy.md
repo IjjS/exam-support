@@ -19,8 +19,15 @@ Check top to bottom and take the **first match**. Never assign more than one typ
 5. Concept and direction right, only the number wrong?   → recall
 ```
 
-A question answered `??` (guessed) but **correct** is classified too. Default it to `unknown`; if the user says
-"I was torn between A and B," use `confusion`.
+Correct answers get classified too, when they carry a confidence tag:
+
+| Origin | Default type | Reasoning |
+|---|---|---|
+| `lucky` — correct with `??` | `unknown` | A guess that landed. Override to `confusion` if the user says they were torn between two |
+| `shaky` — correct with `?` | **`confusion`** | "Narrowed it to two" *is* a blurred boundary. Override only if the user says otherwise — e.g. they knew the concept but were unsure of a number, which is `recall` |
+
+For `shaky`, capture **which option they were weighing against** if they mention it. That pair is the most valuable
+thing in the entry — it goes straight to `exam-comp` as a comparison-table candidate.
 
 ---
 
@@ -96,7 +103,7 @@ of `wrongbook.md`. Classify the type based on **the option that was wrong.**
 
 | What | File |
 |---|---|
-| Type + one-line description of the misconception | `state/wrongbook.md` |
+| Type, **origin** (`miss` / `lucky` / `shaky`), one-line description | `state/wrongbook.md` |
 | Full question, options, explanation, the user's answer | `state/log/{YYYY-MM}.md` |
 | Running counts per type | hot block at the top of `state/wrongbook.md` |
 | Missed requirement keywords | notes column of `state/wrongbook.md` |

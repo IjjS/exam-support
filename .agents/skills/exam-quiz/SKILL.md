@@ -142,21 +142,53 @@ If any check fails, rewrite before sending. **Nothing preceding the user's answe
 
 ### Verdict
 
-```
-correct + confident/shaky  →  correct
-correct + guessed (??)     →  ★ recorded as wrong (lucky +1)
-wrong                      →  wrong
-```
+Scoring and the review queue are **two separate decisions.** A question can score as correct and still
+belong in the wrongbook.
 
-Counting lucky guesses as wrong is the core of this system. Do not soften it.
+| Answer | Scored | Wrongbook | origin |
+|---|---|---|---|
+| correct + confident | correct | — | |
+| **correct + `?`** | **correct** | **✅ added** | `shaky` |
+| correct + `??` | **wrong** | ✅ added | `lucky` |
+| wrong | wrong | ✅ added | `miss` |
 
-### Handling wrong answers
+- **`??` is scored as wrong.** Getting it right by guessing is not knowing it. Do not soften this
+- **`?` is scored as correct but still queued.** The user narrowed it to two and happened to pick right;
+  that is a coin flip they won. It goes in the review queue without being punished in the score
+- Accuracy stays `(correct - lucky) / attempts`. Shaky answers were genuinely correct, so they count —
+  the wrongbook entry is how they get revisited, not a score penalty
 
-For each wrong answer (lucky guesses included), **read `_spec/error-taxonomy.md`** and assign a type.
-Skip that read entirely if nothing was wrong.
+Record the origin on every wrongbook entry. Three different signals need three different treatments.
 
-Explain **only the wrong ones, in 3-5 lines** (Korean): why the answer is right, and why their pick is not.
-Say nothing about the ones they got right.
+### Older wrongbooks without the origin column
+
+A book created before origin tracking has no `origin` or `Streak` column. Do not rewrite its history.
+
+- Add the two columns, leaving them blank on existing rows
+- A blank origin is treated as `miss` (the strictest bar: 3 confident correct)
+- New rows get a real origin
+- Refresh the hot block to the `active: n (miss / lucky / shaky)` form, counting blanks as `miss`
+
+Say in one line that the format was extended. Never guess an origin for a past entry — the information was
+not recorded, and inventing it would corrupt the one dataset that cannot be regenerated.
+
+### Handling entries that go to the wrongbook
+
+For every `miss`, `lucky`, and `shaky` entry, **read `_spec/error-taxonomy.md`** and assign a type.
+Skip that read entirely if all five were confident and correct.
+
+`shaky` almost always classifies as `confusion` — "I narrowed it to two" is the definition of a blurred
+boundary. If the user names the other option they were weighing, record the pair; it becomes an `exam-comp` candidate.
+
+Explanations:
+
+| | Explain? |
+|---|---|
+| `miss` · `lucky` | **Yes, 3-5 lines** — why the answer is right, why their pick is not |
+| `shaky` | **One line** — just the discriminator that separates it from the option they hesitated over |
+| confident + correct | Nothing |
+
+A shaky answer does not need a full explanation. It needs the one sentence that would have made it confident.
 
 ## Phase 5 — Recording
 
@@ -166,7 +198,7 @@ Update the following, **in order**.
 |---|---|
 | `state/log/{YYYY-MM}.md` | Append full question, options, user answer, correct answer, explanation (**write-only**) |
 | `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score**. Refresh the hot block |
-| `state/wrongbook.md` | Add one line per new wrong answer, increment repeats for recurrences, move three-in-a-row correct entries to `_resolved.md`. Refresh the hot block |
+| `state/wrongbook.md` | Add one line per `miss` / `lucky` / `shaky`, with its origin. Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md`. Refresh the hot block |
 | `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) |
 | `state/harvest-queue.md` | Queue tier 2/3 topics, plus `unknown` and `thin-note` cases |
 | `exams/_registry.md` | Update this slug's coverage, accuracy, session count |
