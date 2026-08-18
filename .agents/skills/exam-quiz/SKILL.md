@@ -194,8 +194,8 @@ Whole message
 
 # Question generation rules
 
-Everything below governs how a question is written. It used to live in `references/quiz-rules.md`;
-Phase 3 always runs, so a separate file only bought a round-trip.
+Everything below governs how a question is written. It lives here rather than in a reference because Phase 3
+always runs — a separate file would only have bought a round-trip.
 
 ## First principle — zero hints
 

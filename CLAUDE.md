@@ -16,7 +16,7 @@ Designed to be driven from a phone via remote control of this Mac. **Short outpu
 
 ## Absolute rules
 
-1. **Topic IDs (`T-041`) are permanent** — never reissue, reuse, or delete one. If domains are reorganized, keep the ID and change only the domain column. Mark removed topics `deprecated`; never delete the row. Do not encode the domain into the ID.
+1. **Topic IDs (`T-041`) are permanent** — never reissue, reuse, or delete one. If sections are reorganized, keep the ID and change only the section column. Mark removed topics `deprecated`; never delete the row. Do not encode the section into the ID.
 2. **Hot block at the top of state files** — aggregates live in the first 15 lines. Use `Read(limit=N)` instead of loading the whole file.
 3. **`state/log/` is write-only in the loop** — `exam-quiz` must never read it, at all. `exam-desc` may, only for an entry the user named, and only with grep-then-bounded-read. Log headings carry the `W-id` so that lookup is an index hit, not a scan.
 4. **Notes and questions hold to different bars.** A note may be backed only by Tier A (official) or B (user files, published past papers) — **Tier C is a lead, never a citation**: confirm the claim against A or B, then cite what confirmed it. A question may draw on any tier, because it is generated fresh and nothing is stored. Record source and date every time. See `_spec/source-policy.md`.
@@ -42,6 +42,8 @@ Designed to be driven from a phone via remote control of this Mac. **Short outpu
 ## File roles
 
 ```
+_spec/               Specs shared by more than one skill — source-policy, error-taxonomy,
+                     file-reading, pdftext.swift. A skill's own rules stay in its references/.
 _inbox/              User-supplied source files (URL·PDF·MD·TXT·DOCX·XLSX·PPTX·image; no HWP).
                      init and harvest pick them up, then move them to _sources/.
                      Material handed over in conversation is saved to _sources/ before use, or it is lost.
@@ -51,9 +53,9 @@ exams/_registry.md   Per-exam summary cache (coverage %, accuracy, D-day)
 exams/{slug}/
   exam.md            Exam metadata
   format.md          Question format spec + anchors. DRIFT-CHECK block at top
-  blueprint.md       Domains, weights, topics (immutable)
+  blueprint.md       structure (weighted|counted|flat), sections, weights, topics (immutable)
   _sources/          Processed user-supplied files (originals kept)
-  notes/             {domain}/{topic}.md, _compare/, _facts.md
+  notes/             {section}/{topic}.md — or {topic}.md when structure: flat. _compare/, _facts.md
   state/
     mastery.md       Per-topic proficiency (includes coverage)
     wrongbook.md     Active wrong-answer index (one line per entry)
@@ -70,8 +72,8 @@ exams/{slug}/
 | Access | Skills |
 |---|---|
 | Writes | `exam-init` `exam-harvest` `exam-quiz` `exam-comp` |
-| Read-only | `exam-status` `exam-desc` `exam-skills` |
-| Confirm first | `exam-reset` (delete only after backup) |
+| Read-only | `exam-status` `exam-skills` · `exam-desc` (one exception: queues to harvest with consent) |
+| Confirm first | `exam-reset` (backup first; `--rm` archives the whole exam) |
 
 ## Before modifying a skill
 

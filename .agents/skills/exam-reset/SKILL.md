@@ -1,6 +1,6 @@
 ---
 name: exam-reset
-description: Reset a certification's study state — accuracy, wrong-answer book, session history, coverage. Use when the user says "리셋", "초기화", "처음부터 다시", "기록 지워줘", "오답노트 비워", or "reset". Always backs up before deleting, preserves notes and blueprint depending on scope, and requires explicit user confirmation before removing anything.
+description: Reset a certification's study state — accuracy, wrong-answer book, session history, coverage. Use when the user says "리셋", "초기화", "처음부터 다시", "기록 지워줘", "오답노트 비워", or "reset". --rm {exam} unregisters an exam entirely so init can start clean. Always backs up before deleting, preserves notes and blueprint depending on scope, and requires explicit user confirmation before removing anything.
 ---
 
 # exam-reset
@@ -21,10 +21,30 @@ Map the user's phrasing to a scope. **Ask** if it is ambiguous.
 | `wrong` | wrong-answer book, `_resolved` | statistics, notes, blueprint | "오답노트 비워" |
 | `state` | all six state files | notes, comparison tables, blueprint, format | "학습기록 다 지워" |
 | `all` | state + notes + comparison tables | blueprint, exam.md, format | "완전히 처음부터" |
+| **`--rm`** | **the entire exam directory** | **nothing** | "시험 자체를 지워", "등록 취소", "처음부터 다시 등록" |
 
-**No scope ever deletes `blueprint.md`, `exam.md`, or `format.md`.**
-Those define the exam; they are not the user's study data. Removing a certification entirely means deleting the
-directory by hand.
+**No study scope deletes `blueprint.md`, `exam.md`, or `format.md`.**
+Those define the exam; they are not the user's study data. To remove a certification entirely, use `--rm`.
+
+### `--rm` — unregister the exam
+
+`/exam-reset --rm {exam}` clears everything and returns the slug to a state where `/exam-init` starts clean.
+For when the blueprint itself is wrong, the schema changed, or it was a test registration.
+
+```
+exams/{slug}/       → moved to exams/_archive/{slug}-{YYYY-MM-DD}/
+exams/_registry.md  → the slug's row removed
+exams/_active.md    → cleared to — if it pointed here
+```
+
+**Move, never delete.** The directory goes to `exams/_archive/` intact. A mistaken `--rm` over months of mastery
+data is unrecoverable any other way, and the archive costs nothing since `exams/` is gitignored.
+
+Three confirmations — this is the only command that can destroy a study history in one step:
+
+1. Show what goes: topics, sessions, notes, wrongbook entries, coverage
+2. Require the user to **type the slug**
+3. Report the archive path, so undo is one `mv`
 
 ## Phase 2 — Confirmation
 
@@ -89,7 +109,9 @@ Point out that the session count is back to zero, so **the three-session basic-m
 
 - Delete before backing up
 - Run without confirmation (show the inventory even if the user says "그냥 지워")
-- Delete `blueprint.md`, `exam.md`, or `format.md`
+- Delete `blueprint.md`, `exam.md`, or `format.md` **under any scope except `--rm`**
+- Run `--rm` without moving the directory to `exams/_archive/` first
+- Run `--rm` on a slug the user did not type out
 - Delete `state/log/`
 - Delete mastery rows (zero the values instead)
 - Overwrite an existing backup

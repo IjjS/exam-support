@@ -3,7 +3,7 @@
 > The dangerous part of studying for a certification isn't the questions you got wrong.
 > It's the areas you never ran into at all. This repo exists to find those and eliminate them.
 
-A certification study system built from seven Claude Code skills and a pile of markdown files.
+A certification study system built from eight Claude Code skills and a pile of markdown files.
 No database, no server, no app. Everything is a `.md`.
 
 ---
@@ -44,6 +44,7 @@ flowchart TB
         STAT["<b>/exam-status</b><br/>where am I"]
         COMP["<b>/exam-comp</b><br/>A vs B"]
         DESC["<b>/exam-desc</b><br/>what is this"]
+        SKIL["<b>/exam-skills</b><br/>what can I run"]
         RSET["<b>/exam-reset</b><br/>start over"]
     end
 
@@ -65,7 +66,7 @@ Quiz gets faster and more accurate the more you use it.
 ```mermaid
 flowchart TD
     A["read state<br/><i>sessions · mastery · wrongbook · format</i>"] --> B{"3 basic<br/>sessions done?"}
-    B -->|"no"| C["<b>basic mode</b><br/>untested topics first<br/>spread by domain weight"]
+    B -->|"no"| C["<b>basic mode</b><br/>untested topics first<br/>spread by blueprint weight"]
     B -->|"yes"| D["<b>weakness mode</b><br/>worst scores + lucky guesses<br/>+ unresolved wrong answers"]
     C --> E["pick 5 topics"]
     D --> E
@@ -244,6 +245,7 @@ Plain `2` every time works fine, but that switches off one of the three layers.
 | `/exam-init 자격증명` | Register a new exam |
 | `/exam-init --format` | Refresh the question format spec |
 | `/exam-reset` | Reset state (after backup) |
+| `/exam-reset --rm 자격증` | Unregister an exam entirely, archiving it first |
 | `/exam-skills` | List every skill and what it does |
 
 ---
@@ -415,3 +417,4 @@ but do not execute identically.
 | `CLAUDE.md` | Agent operating rules (auto-loaded every session) |
 | `docs/DESIGN.md` | Design rationale, token budget, migration rules |
 | `_spec/error-taxonomy.md` | How the five error types are decided |
+| `_spec/source-policy.md` | What may back a claim, and at which tier |

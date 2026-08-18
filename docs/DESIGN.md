@@ -61,6 +61,7 @@ exam-comp           wrongbook · notes/ · web          notes/_compare/ · wrong
 exam-desc           grep notes/ · mastery row         nothing   (harvest-queue only if the user agrees)
 
 exam-reset          reset-scope.md                    state/*  after copying to _archive/
+                                                      --rm: moves exams/{slug}/ to exams/_archive/
 ```
 
 ### Ownership rules these encode
@@ -101,24 +102,25 @@ Two separate reasons for this shape, and both matter:
 
 ## 2. There is exactly one hot path
 
-Of the seven skills, only `exam-quiz` runs at high frequency (1-3 times a day, on a phone). The rest are rare and are not
+Of the eight skills, only `exam-quiz` runs at high frequency (1-3 times a day, on a phone). The rest are rare and are not
 optimization targets. **Every optimization argument is settled by asking: does this affect per-session cost of quiz?**
 
 ```mermaid
 flowchart LR
-    subgraph hot ["HOT — every quiz session, ~16k"]
+    subgraph hot ["BEFORE THE QUESTIONS APPEAR — ~16k"]
         direction TB
-        H1["CLAUDE.md 1.2k"]
-        H2["exam-quiz SKILL + rules 3.7k"]
+        H1["CLAUDE.md 1.5k"]
+        H2["exam-quiz SKILL.md 4.1k"]
         H3["format.md 2.8k"]
-        H4["mastery.md 3.4k"]
+        H4["mastery.md 3.9k"]
         H5["sessions limit=15 · 0.1k"]
         H6["wrongbook 1.2k"]
         H7["5 notes 3.0k"]
     end
     subgraph cond ["CONDITIONAL"]
-        C1["error-taxonomy 1.2k<br/><i>only when something was missed</i>"]
-        C2["mock-exam.md<br/><i>only on a mock</i>"]
+        C1["grading.md 1.7k<br/><i>at Phase 4, while the user solves</i>"]
+        C2["error-taxonomy 1.4k<br/><i>only on a miss</i>"]
+        C3["mock-exam.md<br/><i>only on a mock</i>"]
     end
     subgraph cold ["COLD — never in a quiz session"]
         D1["blueprint.md"]
@@ -136,30 +138,32 @@ flowchart LR
 **Anything moved from COLD to HOT has to justify itself in tokens per session, every session, forever.**
 That is the test a new feature has to pass.
 
-### Per-session token budget — measured 2026-08-15
+### Per-session token budget — measured 2026-08-18
 
-Measured against the two registered exams (AWS SAP-C02, 102 topics; 유통관리사 2급, 120 topics).
-Korean-character rate 1.2 tok/char, ASCII 3.6 chars/tok.
+Two numbers matter, not one. What loads **before the questions appear** is what the user waits through;
+what loads after lands in the window they spend solving.
 
-| Item | Measured | Note |
-|---|---|---|
-| CLAUDE.md | **1.2k** | auto-loaded every session |
-| exam-quiz SKILL.md (rules merged in) | **3.9k** | loaded at activation; grading.md 1.7k loads later, during thinking time |
-| format.md | **2.6k - 2.8k** | the two anchors are full-length exam scenarios |
-| mastery.md (whole) | **3.4k - 3.9k** | 102-120 rows; Korean topic names cost ~4x English |
-| sessions.md via `Read(limit=15)` | **0.1k** | working as designed |
-| wrongbook.md (active only) | ~1.2k | projected at 50 sessions; currently 0.2-0.4k |
-| 5 notes | ~3.0k | projected; currently 0 notes exist |
-| `_spec/error-taxonomy.md` | +1.2k | conditional — only when something was wrong |
-| **Total** | **~16k - 17k** | |
+| Before the questions appear | |
+|---|---|
+| CLAUDE.md | 1.5k |
+| exam-quiz SKILL.md (generation rules merged in) | 4.1k |
+| format.md | 2.6k - 2.8k |
+| mastery.md | 3.4k - 3.9k |
+| sessions.md via `Read(limit=15)` | 0.1k |
+| wrongbook.md (active only) | ~1.2k projected |
+| 5 notes | ~3.0k projected |
+| **Subtotal** | **~16k** |
 
-An earlier revision of this table claimed ~9-10k. That figure was an estimate, it omitted CLAUDE.md entirely,
-and it undershot `format.md` by 2.8x and `mastery.md` by 2.3x. The numbers above are measured, not projected.
+| After the questions are out — free window | |
+|---|---|
+| `references/grading.md` at Phase 4 | 1.7k |
+| `_spec/error-taxonomy.md`, only on a miss | 1.4k |
 
-The **shape still holds**: none of these grow with session count. That was the design goal and it survived.
-But the constant is roughly 70% higher than the design assumed.
+Earlier revisions of this table claimed ~9-10k, then ~16-17k. The first was an estimate that omitted CLAUDE.md
+and undershot `format.md` and `mastery.md`; the second was measured but did not separate the two windows.
+Splitting grading out moved 1.7k off the clock without removing anything.
 
-**No change may introduce a read that grows with session count.** That is the one hard rule.
+**No change may introduce a read that grows with session count.** That is still the one hard rule.
 
 ### The two heavy items, and whether they are justified
 
