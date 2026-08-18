@@ -16,7 +16,7 @@ anything heavier stops getting run, and once it stops the question quality decay
 |---|---|
 | `/exam-harvest` | Top 5 of the queue |
 | `/exam-harvest 3` | Top 3 (**recommended on a phone**) |
-| `/exam-harvest D2` | Topics in domain D2 that have no note |
+| `/exam-harvest D2` | Topics in section D2 that have no note (skip under `structure: flat`) |
 | `/exam-harvest Transit Gateway` | One specific topic |
 
 ## Phase 0 — Drift comparison
@@ -62,8 +62,11 @@ Priority:
 1. harvest-queue.md, priority high  (unknown · thin-note)
 2. harvest-queue.md, the rest
 3. mastery 🟥 topics with no note
-4. ⬜ untested topics in heavily weighted domains
+4. ⬜ untested topics, heaviest section first — or simply in topic-ID order under `structure: flat`
 ```
+
+**Use the queue's `Source` column.** When a row carries a URL, whoever queued it already found and verified that
+page — start from it and skip the search. Only widen out if it turns out to be thin.
 
 Announce the selection in one line and begin: `"큐 3개 처리: T-041, T-052, T-018 (예상 2분)"`
 
@@ -73,7 +76,8 @@ With two or more topics, **process them in parallel with subagents.**
 
 ```
 One subagent = one topic
-Instruction: research official docs → write notes/{domain}/{topic}.md directly → return a summary only
+Instruction: research official docs → write the note file directly → return a summary only
+              path: notes/{section}/{topic}.md, or notes/{topic}.md under structure: flat
 Return: {topic id, file path, source count, one-line summary, drift observations}
 ```
 

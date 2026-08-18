@@ -137,9 +137,18 @@ one recorded that day.
 
 1. Check official documentation and explain from it, citing the source
 2. If the web has nothing usable, explain from your own knowledge tagged `[미검증]`
-3. Then, as the footer, offer to queue it: `노트 없음 — /exam-harvest 로 정리할까요?`
+3. Then, as the footer, offer to queue it
 
-Queue it only if the user says yes. That write is the only one this skill may perform.
+**Offer only when a web fetch or search actually happened.** That is the case worth capturing: you paid to find
+and read a page, and without queueing it that research is thrown away and harvest repeats it later.
+Explaining from an existing note, or from model knowledge alone, produced nothing to hand over — say nothing.
+
+```
+공식 문서에서 확인했습니다. 큐에 넣어둘까요?  (harvest가 이 URL부터 시작합니다)
+```
+
+Queue it only if the user says yes, and **record the URL you used in the `Source` column**. That write is the
+only one this skill may perform.
 
 If the concept is not in the blueprint either, say it may be outside the exam scope and mention
 `/exam-init --refine` if it looks like a real gap.

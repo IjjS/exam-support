@@ -46,9 +46,9 @@ An explicit user instruction wins: domain (`D2`), question count (`10문제`), m
 
 | Mode | Topic selection | Difficulty |
 |---|---|---|
-| Basic (diagnostic) | **⬜ untested first** + spread across domains by weight | easy 40 / med 40 / hard 20 |
+| Basic (diagnostic) | **⬜ untested first**, allocated by blueprint weight | easy 40 / med 40 / hard 20 |
 | Weakness | Top scores + lucky-guess topics + active wrong answers | med 30 / hard 70 |
-| Section | Same rules inside the named domain | med 40 / hard 60 |
+| Section | Same rules inside the named section | med 40 / hard 60 |
 | Mock exam | → `references/mock-exam.md` | Real weights |
 
 Default is **5 questions**. Announce the resolved mode in one line before starting.
@@ -61,7 +61,24 @@ The weakness score is already stored on each mastery row. **Sort, do not recompu
 score = (1-accuracy)×3 + lucky_rate×2 + shaky_rate×1 + domain_weight + staleness
 ```
 
-- No more than 3 questions from one domain
+### Spread — by share, not by count
+
+The blueprint's structure drives the spread. Express every limit as a **percentage of the session**, never as a
+fixed number of questions: three-of-five and three-of-fifty are not the same request.
+
+| Mode | Allocation |
+|---|---|
+| Basic · Mock | **Match the blueprint weights.** Allocate by largest remainder, so 5 questions over 26/29/25/20 gives 1/2/1/1 |
+| Weakness | Weight is only one term in the score. Cap any single section at **60% of the session** so at least two get touched |
+| Section | The named section takes 100%; spread within it instead |
+
+With 5 questions, the 60% cap works out to 3 — the same as the old fixed rule. With 30 it becomes 18,
+which the old rule would have wrongly held to 3.
+
+**If the exam has no sections** (`structure: flat` in blueprint), none of this applies. Spread across the topic
+list instead: no two questions from adjacent topic IDs, since neighbouring IDs came from the same part of the
+source material.
+
 - Re-asking active wrong answers is capped at **40% of the questions**; the rest are new topics
 - When re-asking, **never reuse the same question** — probe the same knowledge from a different angle
 - Skip `deprecated` topics
@@ -75,7 +92,7 @@ Follow `format.md` for the single/multiple-response mix, stem length, phrasing, 
 ### Three-tier sourcing
 
 ```
-1. notes/{domain}/{topic}.md exists  →  generate from the note only
+1. the topic's note exists           →  generate from the note only
 2. No note                           →  verify against vendor official docs via WebSearch/WebFetch
 3. Web also fails                    →  Claude's own knowledge, tagged [UNVERIFIED]
 ```
@@ -84,6 +101,9 @@ Follow `format.md` for the single/multiple-response mix, stem length, phrasing, 
 A slow start on a phone means the tool stops getting used — speed beats accuracy here.
 
 Every topic sourced via tier 2 or 3 goes into `harvest-queue.md` (reason: `unverified-question`).
+
+**Tier 2 queues the URL it just used**, in the queue's `Source` column. You paid to find and verify that page;
+harvest would otherwise search for it again from scratch. Tier 3 leaves `Source` empty — there was nothing to record.
 
 ### Presentation
 
@@ -244,7 +264,7 @@ wrongbook row both reference it. That is a decision, not a file read, so it does
 | `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score**. Refresh the hot block |
 | `state/wrongbook.md` | Add one line per `miss` / `lucky` / `shaky`, with its origin. Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md`. Refresh the hot block |
 | `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) |
-| `state/harvest-queue.md` | Queue tier 2/3 topics, plus `unknown` and `thin-note` cases |
+| `state/harvest-queue.md` | Queue tier 2/3 topics with the `Source` URL where one exists, plus `unknown` and `thin-note` cases |
 | `exams/_registry.md` | Update this slug's coverage, accuracy, session count |
 
 **Do not modify `blueprint.md`.**

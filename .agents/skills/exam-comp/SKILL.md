@@ -88,7 +88,7 @@ Then continue at Phase 1 with those targets. One neighbor → `vs-{a}-{b}.md`; t
 ## Phase 1 — Sourcing
 
 ```
-1. The targets appear in notes/{domain}/{topic}.md  → note-based
+1. The targets have notes                           → note-based
 2. Otherwise                                        → vendor official docs (follow source-policy), cite sources
 3. Web also fails                                   → [UNVERIFIED] label
 ```
@@ -171,6 +171,23 @@ Need dedicated bandwidth or consistent latency?
 |---|---|
 | `notes/_compare/{file}.md` | Create or update |
 | `state/wrongbook.md` | Mark the entry's notes column `comparison table written` (**do not remove the entry** — only three consecutive correct answers in a quiz resolves it) |
+| `state/harvest-queue.md` | **Ask first** — see below |
+
+### Offer to queue what you had to research
+
+A comparison table needs each target's distinguishing traits, not a full concept note. So when a target had no
+note and you went to the web for it, the page you read is worth handing to harvest rather than discarding —
+otherwise harvest searches for the same document later.
+
+Offer once, listing only the targets that lacked a note **and** required a fetch:
+
+```
+Snowmobile · DataSync 는 노트가 없어 공식 문서를 확인했습니다.
+큐에 넣어둘까요?  (harvest가 그 URL부터 시작합니다)
+```
+
+On yes, add one row each with reason `confusion` and the URL in `Source`. Do not queue targets that already
+had notes, and do not queue anything if no fetch happened.
 
 Do not modify `mastery.md`. Reading a comparison table does not raise proficiency.
 

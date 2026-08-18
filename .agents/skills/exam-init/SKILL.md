@@ -65,27 +65,41 @@ Search vendor official pages via WebSearch and collect:
 
 Ask for the exam date (optional). It drives the D-day.
 
-## Phase 2 — Domains and weights
+## Phase 2 — Discover the exam's own structure
 
-Pull the domains and their **official weights (%)** from the Exam Guide.
+**Do not assume the exam has domains.** Find out how it is actually organized and record that.
+Deciding the structure is the whole reason this phase exists — every later skill reads it rather than guessing.
 
-- Put **"extract only domain names, weights, and task lists"** in the WebFetch prompt. Do not pull whole pages into context
+- Put **"extract only the section names, weights, and task lists"** in the WebFetch prompt. Do not pull whole pages into context
 - For PDFs, convert on the command line and read only the relevant sections
 - If the weights cannot be found, **do not guess** — ask the user
 
-### Domestic exams
+### The three shapes an exam takes
 
-Korean national and quasi-national certifications publish a 출제기준 whose hierarchy maps almost directly onto the
-blueprint — often more cleanly than a vendor Exam Guide's prose task statements.
+| `structure` | Looks like | Weight comes from |
+|---|---|---|
+| `weighted` | Named domains with published percentages — AWS, most vendor exams | The published % |
+| `counted` | 과목 with a fixed number of questions each — Korean national certifications | Questions per section ÷ total |
+| `flat` | A single curriculum with no grouping at all | None. Every topic is equal |
+
+Record the choice in `blueprint.md` as `structure:`, and use the exam's own word for the grouping
+(`domain`, `과목`, `area`) in the `section_label:` field. The system calls it a **section** internally;
+the label is what the user sees.
+
+`flat` is a legitimate outcome, not a failure to find structure. Some exams genuinely have none —
+forcing one invents weights that do not exist and distorts every allocation downstream.
+
+### Hierarchies deeper than two levels
+
+Korean 출제기준 often runs three deep. Flatten the middle:
 
 ```
-주요항목  → domain
-세부항목  → grouping
+주요항목  → section
+세부항목  → grouping only, not stored
 세세항목  → leaf topic
 ```
 
-Weights come from **questions per subject** rather than a published percentage
-(e.g. 4 subjects across 90 questions → the per-subject count is the weight).
+Keep the middle level out of the blueprint. It is useful while breaking topics down and noise afterwards.
 
 ## Phase 3 — Topic breakdown
 
@@ -154,7 +168,8 @@ cp -r _template/exam exams/{slug}
 Copy **without reading** the template, then substitute the `{{PLACEHOLDER}}` values. Six files appear at once.
 
 Then:
-- `mkdir -p exams/{slug}/notes/d{n}-{domain-slug}` for each domain
+- `mkdir -p exams/{slug}/notes/d{n}-{section-slug}` for each section. **Under `structure: flat`, skip this** —
+  notes go directly in `notes/{topic}.md`
 - Move anything processed from `_inbox/` into `exams/{slug}/_sources/`
 - `blueprint.md` — write the domain and topic tables
 - `mastery.md` — one row per topic, all ⬜, coverage `0/{n}`

@@ -10,6 +10,8 @@ Updated: {{CREATED}}
 
 Status: ⬜ untested · 🟥 0-39% · 🟨 40-69% · 🟩 70-89% · 🟦 90-100%
 
+<!-- D = section ID from blueprint. Empty under structure: flat. -->
+
 | ID | Topic | D | Att | Correct | Lucky | Shaky | Status | Last | Score |
 |---|---|---|---|---|---|---|---|---|---|
 | | | | | | | | | | |

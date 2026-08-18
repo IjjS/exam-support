@@ -1,6 +1,6 @@
 # Concept note template
 
-Followed by collecting subagents when writing `notes/{domain}/{topic}.md`.
+Followed by collecting subagents when writing a concept note. See Filename below for where it goes.
 
 ---
 
@@ -86,10 +86,11 @@ controlling transitive routing.
 ## Filename
 
 ```
-notes/d2-design-new-solutions/transit-gateway-routing.md
+notes/d2-design-new-solutions/transit-gateway-routing.md    structure: weighted | counted
+notes/transit-gateway-routing.md                           structure: flat
 ```
 
-English kebab-case, matching the topic name.
+English kebab-case, matching the topic name. The section directory only exists when the exam has sections.
 
 ---
 
