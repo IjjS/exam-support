@@ -495,11 +495,19 @@ Two mitigations are baked into the skills.
 | File | Audience | Loaded | Constraint |
 |---|---|---|---|
 | `README.md` | Human | Never | Free |
-| `CLAUDE.md` | Agent | Every session, automatically | **~700 token ceiling** |
+| `CLAUDE.md` | Agent | Every session, automatically | **~1.5k ceiling** (measured 1,475) |
 | `docs/DESIGN.md` | Agent | Only when modifying skills | Free |
 
 Putting design rationale in CLAUDE.md would hand back every optimization recorded here.
 **CLAUDE.md holds the "what"; the "why" lives in this file.**
+
+The ceiling was originally written as ~700, which was a number invented before anything had been measured.
+The file has since settled at 1,475, and every part of it is load-bearing: seven absolute rules, the routing
+table, the file-role map, and write permissions. Cutting to 700 would mean dropping the file-role map (~400),
+which a directory listing cannot replace because it encodes each file's *purpose*.
+
+**1.5k is the working ceiling.** Treat a push past it as a signal to move something into a skill, not as a
+budget to spend.
 
 `AGENTS.md` is a symlink to `CLAUDE.md` — tool compatibility with no duplicated content.
 
