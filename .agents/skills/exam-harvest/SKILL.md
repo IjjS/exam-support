@@ -59,11 +59,16 @@ Notes are harvest's only output. Point the user at `/exam-init --refine` (topics
 Priority:
 
 ```
-1. harvest-queue.md, priority high  (unknown · thin-note)
+1. harvest-queue.md, priority high  (unknown · thin-note · exhausted)
 2. harvest-queue.md, the rest
 3. mastery 🟥 topics with no note
 4. ⬜ untested topics, heaviest section first — or simply in topic-ID order under `structure: flat`
 ```
+
+**`exhausted` means extend, not replace.** The note was adequate; the user has simply asked that topic four or
+more times and used up what it holds. Keep what is there and add depth — more of `Core behavior`, the numbers
+the note skipped, a second entry under `Easily confused with`. Rewriting from scratch throws away work and
+usually lands in the same place.
 
 **Use the queue's `Source` column.** When a row carries a URL, whoever queued it already found and verified that
 page — start from it and skip the search. Only widen out if it turns out to be thin.

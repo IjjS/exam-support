@@ -107,7 +107,7 @@ optimization targets. **Every optimization argument is settled by asking: does t
 
 ```mermaid
 flowchart LR
-    subgraph hot ["BEFORE THE QUESTIONS APPEAR — ~16k"]
+    subgraph hot ["BEFORE THE QUESTIONS APPEAR — ~19k"]
         direction TB
         H1["CLAUDE.md 1.5k"]
         H2["exam-quiz SKILL.md 4.1k"]
@@ -115,7 +115,7 @@ flowchart LR
         H4["mastery.md 3.9k"]
         H5["sessions limit=15 · 0.1k"]
         H6["wrongbook 1.2k"]
-        H7["5 notes 3.0k"]
+        H7["5 notes 6.1k"]
     end
     subgraph cond ["CONDITIONAL"]
         C1["grading.md 1.7k<br/><i>at Phase 4, while the user solves</i>"]
@@ -151,16 +151,32 @@ what loads after lands in the window they spend solving.
 | mastery.md | 3.4k - 3.9k |
 | sessions.md via `Read(limit=15)` | 0.1k |
 | wrongbook.md (active only) | ~1.2k projected |
-| 5 notes | ~3.0k projected |
-| **Subtotal** | **~16k** |
+| 5 notes | **~6.1k measured** (1.2k each, against a 400-700 target) |
+| **Subtotal** | **~19k** |
 
 | After the questions are out — free window | |
 |---|---|
 | `references/grading.md` at Phase 4 | 1.7k |
 | `_spec/error-taxonomy.md`, only on a miss | 1.4k |
 
-Earlier revisions of this table claimed ~9-10k, then ~16-17k. The first was an estimate that omitted CLAUDE.md
-and undershot `format.md` and `mastery.md`; the second was measured but did not separate the two windows.
+Earlier revisions claimed ~9-10k, then ~16-17k. Each was corrected upward as something got measured rather than
+estimated. The remaining surprise is **notes**: the template targets 400-700 and the 28 written so far average
+**1,217**, so five of them cost 6.1k rather than the 3.0k the budget assumed.
+
+### Note size, and why the fix is not thicker notes
+
+Bigger notes support more questions before running dry, which sounds like the answer to exhaustion. It is not,
+because **quiz reads five notes every session and most topics are only ever asked once or twice.**
+
+| Note size | Cost per session | Questions before exhaustion |
+|---|---|---|
+| 600 tokens | 3.0k | 2-3 |
+| 1,200 tokens | 6.1k | 5-6 |
+
+Paying double on every session buys extra capacity that most topics never use. The capacity is only wanted on
+the handful of topics that keep coming back — which is precisely what the `exhausted` queue reason handles:
+keep notes lean, and deepen the ones that earn it.
+
 Splitting grading out moved 1.7k off the clock without removing anything.
 
 **No change may introduce a read that grows with session count.** That is still the one hard rule.

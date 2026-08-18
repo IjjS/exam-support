@@ -107,9 +107,35 @@ Follow `format.md` for the single/multiple-response mix, stem length, phrasing, 
 
 ```
 1. the topic's note exists           →  generate from the note only
-2. No note                           →  verify against vendor official docs via WebSearch/WebFetch
+2. No note, or the note is exhausted →  verify against vendor official docs via WebSearch/WebFetch
 3. Web also fails                    →  Claude's own knowledge, tagged [UNVERIFIED]
 ```
+
+**Read exactly the notes for the topics you selected — five files, in full, and nothing else.**
+Never read a whole section's worth of notes. At a measured 1.2k per note, five is already 6k; a domain of
+thirty would be 36k for five questions.
+
+### When the note runs out
+
+A note is built to support 2-5 questions — that is what its sections hold. Ask the same topic a sixth time and
+you are rewording a question you already asked, which is exactly the failure the whole system exists to prevent.
+
+```
+mastery.Att >= 4  and the note has not been updated since
+        ├─ this question:  tier 2 allowed, inside the usual 2-per-session cap
+        └─ the queue:      add with reason `exhausted`
+```
+
+Both halves matter. Tier 2 rescues this question; the queue entry means harvest deepens the note so the topic
+stops needing rescuing. `exhausted` is not `thin-note` — the note was adequate and got used up, so harvest
+should extend it rather than start over.
+
+This bites hardest in weakness mode, where a stubborn topic returns every second or third session. That topic
+is also the one most in need of varied probing, so leaving it on a spent note is the worst place to economize.
+
+**Manual override.** `"웹도 써서"`, `"새로운 각도로"`, `"더 어렵게"` lifts the note-only restriction for the
+session regardless of `Att`. The user cannot see when a note is spent — that is internal state — so the automatic
+trigger is the primary path and this is the escape hatch.
 
 Tier 2 may draw on **any of A, B, or C** — a question is generated fresh each time and nothing is stored, so it
 holds to a lower bar than a note. Tag the source in the explanation. **Do not read `_spec/source-policy.md`;**
