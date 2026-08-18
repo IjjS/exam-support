@@ -261,7 +261,8 @@ flowchart LR
     style S4 fill:#2d5016,color:#fff
 ```
 
-The first three sessions are locked to **basic mode**.
+The first three sessions are locked to **basic mode**, and they lean hard on purpose — a question you were
+always going to get right says very little about where your blind spots are.
 
 Weakness mode only means something once weaknesses have surfaced, and one or two sessions is too small a sample.
 So until three basic-mode sessions (diagnostic or mock) are done, asking for weakness mode still runs basic mode.
@@ -269,7 +270,7 @@ Basic mode prioritizes untested (⬜) topics, so three rounds pull the blind spo
 
 | Mode | When | Difficulty mix |
 |---|---|---|
-| Basic (diagnostic) | Sessions 1-3 | easy 40 / med 40 / hard 20 |
+| Basic (diagnostic) | Sessions 1-3 | easy 20 / med 40 / hard 40 |
 | Weakness | Session 4 onward | med 30 / hard 70 |
 | Section | When you name a domain | That domain |
 | Mock exam | On request | Real exam weights |

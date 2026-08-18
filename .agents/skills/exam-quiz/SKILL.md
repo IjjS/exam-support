@@ -46,12 +46,19 @@ An explicit user instruction wins: domain (`D2`), question count (`10문제`), m
 
 | Mode | Topic selection | Difficulty |
 |---|---|---|
-| Basic (diagnostic) | **⬜ untested first**, allocated by blueprint weight | easy 40 / med 40 / hard 20 |
+| Basic (diagnostic) | **⬜ untested first**, allocated by blueprint weight | easy 20 / med 40 / hard 40 |
 | Weakness | Top scores + lucky-guess topics + active wrong answers | med 30 / hard 70 |
 | Section | Same rules inside the named section | med 40 / hard 60 |
 | Mock exam | → `references/mock-exam.md` | Real weights |
 
 Default is **5 questions**. Announce the resolved mode in one line before starting.
+
+Difficulty is a ratio, so it scales: at 5 questions the diagnostic mix is 1 easy / 2 medium / 2 hard.
+Round to the nearest whole question and let medium absorb the remainder.
+
+**The diagnostic leans hard on purpose.** A question everyone passes carries almost no information about where
+the blind spots are; the discriminating ones sit near the edge of what the user can actually do. Sessions 1-3
+are the measurement, so they are weighted to measure rather than to encourage.
 
 ## Phase 2 — Topic selection
 
