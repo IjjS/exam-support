@@ -151,7 +151,7 @@ what loads after lands in the window they spend solving.
 | mastery.md | 3.4k - 3.9k |
 | sessions.md via `Read(limit=15)` | 0.1k |
 | wrongbook.md (active only) | ~1.2k projected |
-| 5 notes | **~6.1k measured** (1.2k each, against a 400-700 target) |
+| 5 notes | **~6.1k measured** (1.2k each; target 800-1,500) |
 | **Subtotal** | **~19k** |
 
 | After the questions are out — free window | |
@@ -160,22 +160,29 @@ what loads after lands in the window they spend solving.
 | `_spec/error-taxonomy.md`, only on a miss | 1.4k |
 
 Earlier revisions claimed ~9-10k, then ~16-17k. Each was corrected upward as something got measured rather than
-estimated. The remaining surprise is **notes**: the template targets 400-700 and the 28 written so far average
-**1,217**, so five of them cost 6.1k rather than the 3.0k the budget assumed.
+estimated. The largest remaining item is **notes**: the 28 written so far average **1,217**, so five of them
+cost 6.1k rather than the 3.0k an early estimate assumed.
 
-### Note size, and why the fix is not thicker notes
+### Note size — the target is 800-1,500, set from both ends
 
-Bigger notes support more questions before running dry, which sounds like the answer to exhaustion. It is not,
-because **quiz reads five notes every session and most topics are only ever asked once or twice.**
+The original 400-700 was written before any note existed. Every note actually produced landed above it, which
+usually means the target was wrong rather than the work. The range now has a reason at each end.
 
-| Note size | Cost per session | Questions before exhaustion |
+| | Cost per session (×5) | Questions before it runs dry |
 |---|---|---|
 | 600 tokens | 3.0k | 2-3 |
-| 1,200 tokens | 6.1k | 5-6 |
+| **800 — lower bound** | 4.0k | 3-4 |
+| **1,500 — upper bound** | 7.5k | 6-7 |
+| 2,000 tokens | 10.0k | 7-8 |
 
-Paying double on every session buys extra capacity that most topics never use. The capacity is only wanted on
-the handful of topics that keep coming back — which is precisely what the `exhausted` queue reason handles:
-keep notes lean, and deepen the ones that earn it.
+**Below 800** the note is spent after two or three questions and the topic keeps returning to the queue —
+you pay the collection cost repeatedly instead of once.
+
+**Above 1,500** the cost lands on every session, five times over, buying depth that most topics never use.
+Most are asked once or twice in a study period; only the stubborn few exhaust a note at all.
+
+That asymmetry is why the answer to exhaustion is not "write thicker notes." It is to keep them in range and
+deepen the specific ones that earn it, which is what the `exhausted` queue reason does.
 
 Splitting grading out moved 1.7k off the clock without removing anything.
 

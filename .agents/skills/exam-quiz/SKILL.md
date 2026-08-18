@@ -117,8 +117,8 @@ thirty would be 36k for five questions.
 
 ### When the note runs out
 
-A note is built to support 2-5 questions — that is what its sections hold. Ask the same topic a sixth time and
-you are rewording a question you already asked, which is exactly the failure the whole system exists to prevent.
+A note holds 3-7 questions' worth of material, depending on where in the 800-1,500 range it landed. Ask past
+that and you are rewording a question already asked, which is exactly the failure the whole system exists to prevent.
 
 ```
 mastery.Att >= 4  and the note has not been updated since
@@ -129,6 +129,10 @@ mastery.Att >= 4  and the note has not been updated since
 Both halves matter. Tier 2 rescues this question; the queue entry means harvest deepens the note so the topic
 stops needing rescuing. `exhausted` is not `thin-note` — the note was adequate and got used up, so harvest
 should extend it rather than start over.
+
+Four is a single threshold against a range, so it fires early for a note at the top of the range and on time
+for one at the bottom. **Early is the safe direction**: queueing too soon costs one row, queueing too late
+costs a repeated question on the topic the user is worst at.
 
 This bites hardest in weakness mode, where a stubborn topic returns every second or third session. That topic
 is also the one most in need of varied probing, so leaving it on a spent note is the worst place to economize.
