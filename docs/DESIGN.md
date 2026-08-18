@@ -305,6 +305,33 @@ Rolling back `topic_id_next` in `blueprint.md` gives two different topics the sa
 
 ---
 
+## 5-1. Not every exam has domains
+
+The first draft assumed a vendor-style structure: named domains with published percentages. That assumption
+was baked into topic selection, harvest priority, the notes directory, and the blueprint schema — and it breaks
+on exams that simply do not work that way.
+
+`blueprint.md` now records what the exam actually is:
+
+| `structure` | Shape | Weight from |
+|---|---|---|
+| `weighted` | Named domains with published percentages — AWS, most vendor exams | the published % |
+| `counted` | Subjects with a fixed question count each — Korean national certifications | count ÷ total |
+| `flat` | One curriculum, no grouping | nothing; every topic is equal |
+
+`section_label` holds the exam's own word for the grouping — `domain`, `과목`, `area`. The system says *section*
+internally; the label is what the user sees.
+
+**`flat` is a legitimate finding, not a failed search.** Forcing a structure onto an exam that has none invents
+weights, and invented weights distort every allocation downstream — question spread, harvest priority, coverage
+reporting. Discovering the real shape is the reason init's Phase 2 exists.
+
+What falls back under `flat`: notes go to `notes/{topic}.md` instead of `notes/{section}/{topic}.md`, the
+mastery section column stays empty, and question spread uses topic-ID distance instead of section share.
+
+Deeper hierarchies flatten. A three-level 출제기준 maps 주요항목 → section and 세세항목 → topic, and the middle
+level is dropped: useful while breaking topics down, noise once they exist.
+
 ## 6. format.md — compress the samples and keep them resident
 
 Format differs between exams from the same vendor. AWS SAA is mostly single-select; SAP has a distinctly higher share of
@@ -462,6 +489,26 @@ nothing. The only thing to settle first is the `W-id`, which is a decision rathe
 Nothing was removed. The same records get written; they are just no longer standing between the user and
 their score.
 
+## 8-2. Angle — one facet is not the topic
+
+Three correct answers on a topic from the same angle is mastery of a facet. A 🟦 earned entirely through
+`cost` says nothing about whether the same service is understood under `resilient`, and nothing was recording
+which angle had been used.
+
+`mastery.Angle` holds one code, the most recent. The vocabulary is per-exam and lives in `format.md` as
+`angles:` — requirement keywords for a scenario-heavy paper, question types otherwise. Explicit rather than
+free-form, because `cost` / `cost-effective` / `비용` drift apart and stop being comparable across sessions.
+
+Two constraints keep it from doing harm:
+
+- **The exam's distribution wins.** If a paper is 60% cost-framed, chasing variety trains against the real thing.
+  Angle difference breaks ties inside the distribution; it never reshapes the mix
+- **One code, last-used only.** Attempts per topic run 1-3, so a full histogram would cost tokens to record
+  resolution nobody uses
+
+Empty `angles:` means no constraint, which is the right behaviour for an exam whose samples showed no
+consistent axis.
+
 ## 9. Web fallback limit
 
 Three-tier sourcing for questions:
@@ -477,6 +524,24 @@ takes 1-2 minutes to start a session, and on a phone that means it stops getting
 A fast first session matters more than note accuracy. Fill the rest with `[UNVERIFIED]` and queue them.
 
 Every topic answered via tier 2 or 3 gets appended to `harvest-queue.md`. **The more you quiz, the more notes fill in.**
+
+### What may back a note, versus a question
+
+The two hold to different bars, and the reason is storage.
+
+| | Question | Note |
+|---|---|---|
+| Lifetime | generated fresh, nothing kept | stored, re-read for months |
+| May draw on | **A, B, or C** | **A or B only** |
+
+Tier C — `examtopics.com`, community explanations — is **a lead, never a citation**. It shows what gets tested;
+confirm the claim against an A or B source and cite whatever confirmed it. A `[C]` citation never appears in a note.
+
+Notes carry `sources: [A, B]` in frontmatter so quiz can see how far to trust one without opening the citations.
+
+`harvest-queue.md` carries a `Source` column: whichever skill paid to find and verify a page records its URL
+there, and harvest starts from it instead of searching again. quiz fills it at tier 2; comp and desc offer to,
+but only when a fetch actually happened and only after asking.
 
 ---
 

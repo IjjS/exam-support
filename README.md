@@ -274,6 +274,15 @@ Basic mode prioritizes untested (⬜) topics, so three rounds pull the blind spo
 | Section | When you name a domain | That domain |
 | Mock exam | On request | Real exam weights |
 
+### The same topic, from a different side
+
+Answering a topic correctly three times the same way is mastery of one facet, not the topic. So each topic
+remembers the **angle** it was last probed from — `cost`, `ops`, `resilient`, or whatever axis your exam
+actually varies along — and the next question on it prefers a different one.
+
+The real exam's distribution still wins. If your paper is 60% cost-framed, you get cost-framed questions;
+the angle only breaks ties. Chasing variety past what the exam does would be training against it.
+
 ---
 
 ## Error types
@@ -298,13 +307,27 @@ On an exam like AWS SAP, where `MOST cost-effective` and `LEAST operational over
 ```
 exams/aws-sap/
 ├── exam.md          Exam metadata (code, question count, time, passing score, D-day)
-├── format.md        Question format spec + format anchors
-├── blueprint.md     Domains, weights, topic tree (immutable spec)
+├── format.md        Question format spec, format anchors, question angles
+├── blueprint.md     Structure, sections, weights, topic tree (immutable spec)
 ├── notes/           Concept notes, comparison tables, fact cards
 └── state/           Proficiency, wrong answers, session log, harvest queue
 ```
 
 Each exam gets its own complete set. A wrong answer on AWS SAP has no effect on CKA.
+
+### Exams without domains
+
+Not every exam is organized the way AWS is. Registration records which of three shapes yours takes:
+
+| | Looks like |
+|---|---|
+| `weighted` | Named domains with published percentages — AWS, most vendor exams |
+| `counted` | Subjects with a fixed question count each — Korean national certifications |
+| `flat` | One curriculum, no grouping at all |
+
+`flat` is a real answer, not a failure to find structure. Inventing domains would invent weights, and those
+would skew how questions get spread for the rest of your study. Under `flat`, notes sit directly in `notes/`
+and questions spread across the topic list instead of across sections.
 
 ### Who writes what
 
@@ -383,9 +406,10 @@ Three rules hold this together:
 
 - **Don't work the same exam from two sessions at once.** Last write to the state files wins. (No lock — single-user assumption.)
 - **Without notes, question quality drops.** When you keep seeing `[UNVERIFIED]` tags, it's time to run harvest.
-- **Sources are tiered by artifact, not by site.** Official docs, statutes and statistics, your own files, and
-  **past questions with their answer keys** can back a note. **Community-written explanations cannot** — those are
-  used only for format analysis. The same past-paper page counts as both, depending on which part is being used.
+- **Notes and questions hold to different bars.** A question is generated fresh and thrown away, so it may draw
+  on anything reachable. A note is stored and re-read for months, so it may only be backed by official sources
+  or your own files. Sites like `examtopics.com` are a **lead** — they show what gets tested, then the claim is
+  confirmed against an official source and *that* is what the note cites. Each note records which tiers back it.
 - **You'll be told when the exam changes.** If harvest spots a format change while reading official docs, it records it.
   Topic IDs are never reissued, so your accumulated history survives a reorganization.
 
