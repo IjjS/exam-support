@@ -140,6 +140,10 @@ Skipping this means generating plausible-looking questions that don't match the 
      **for format analysis only.** Read the question shape; never carry over answers or explanations, and never cite
      them in a note. See `exam-harvest/references/source-policy.md`
 2. Analyze and fill `format.md` — type mix, stem length, question phrasings, requirement keywords, distractor patterns, prohibitions
+   - **Derive the `angles:` vocabulary here too.** 4-8 short codes naming the axis this exam varies along:
+     requirement keywords for a scenario-heavy exam, question types otherwise. Fix them explicitly — a free-form
+     label drifts (`cost` / `cost-effective` / `비용`) and stops being comparable across sessions.
+     Leave it empty rather than guessing if the samples show no consistent axis
 3. **Synthesize two anchors** — never copy originals. Same format, different subject. Different domains, one single-select and one multiple-response
 4. Fill the DRIFT-CHECK block at the top (harvest compares against just those 8 lines)
 

@@ -25,6 +25,26 @@ command/manifest authoring tasks instead of options.
 ## Requirement keywords
 {{REQUIREMENT_KEYWORDS}}
 
+## Angles
+
+The axis this exam actually varies questions along. `mastery.Angle` stores one of these codes per topic,
+and quiz uses it to avoid probing the same topic the same way twice.
+
+```
+angles: {{ANGLES}}
+```
+
+4-8 short codes, plus `other`. Derived in `/exam-init` Phase 4 from the sample questions —
+for a scenario-heavy exam these are usually the requirement keywords; for others they are the question types.
+
+| Exam | Typical vocabulary |
+|---|---|
+| AWS SAP | `cost` `ops` `secure` `resilient` `speed` `scale` |
+| 유통관리사 | `계산` `개념진위` `법규적용` `사례판단` |
+| CKA | `create` `debug` `configure` |
+
+Leave `angles:` empty if the samples do not reveal a consistent axis. Quiz then applies no angle constraint.
+
 ## Question phrasings
 {{QUESTION_STEMS}}
 

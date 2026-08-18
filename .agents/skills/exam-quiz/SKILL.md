@@ -79,6 +79,20 @@ which the old rule would have wrongly held to 3.
 list instead: no two questions from adjacent topic IDs, since neighbouring IDs came from the same part of the
 source material.
 
+### Angle — probe a recurring topic from a different side
+
+`mastery.Angle` holds the single code last used for that topic, drawn from the `angles:` list in `format.md`.
+When a topic comes up again, **prefer an angle different from the recorded one.**
+
+Getting a topic right three times from one angle is not mastery of the topic — it is mastery of one facet.
+🟦 earned entirely through `cost` says nothing about whether the same service is understood under `resilient`.
+
+**The exam's distribution wins.** `format.md` says how often each angle really appears; if an exam is 60% `cost`,
+forcing variety would train against the real paper. Pick within the distribution first, and use angle difference
+only to break ties. Never distort the mix to chase a fresh angle.
+
+If `format.md` has no `angles:` list, skip this entirely — there is no axis to vary along.
+
 - Re-asking active wrong answers is capped at **40% of the questions**; the rest are new topics
 - When re-asking, **never reuse the same question** — probe the same knowledge from a different angle
 - Skip `deprecated` topics
@@ -261,7 +275,7 @@ wrongbook row both reference it. That is a decision, not a file read, so it does
 | File | Update |
 |---|---|
 | `state/log/{YYYY-MM}.md` | **Short delta only** — the question block is already there from Phase 3. Append one result line per question: answer, the user's pick, confidence, `W-id`, per-option verdicts |
-| `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score**. Refresh the hot block |
+| `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score** / **the angle just used**. Refresh the hot block |
 | `state/wrongbook.md` | Add one line per `miss` / `lucky` / `shaky`, with its origin. Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md`. Refresh the hot block |
 | `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) |
 | `state/harvest-queue.md` | Queue tier 2/3 topics with the `Source` URL where one exists, plus `unknown` and `thin-note` cases |

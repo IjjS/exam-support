@@ -12,9 +12,11 @@ Status: ⬜ untested · 🟥 0-39% · 🟨 40-69% · 🟩 70-89% · 🟦 90-100%
 
 <!-- D = section ID from blueprint. Empty under structure: flat. -->
 
-| ID | Topic | D | Att | Correct | Lucky | Shaky | Status | Last | Score |
-|---|---|---|---|---|---|---|---|---|---|
-| | | | | | | | | | |
+| ID | Topic | D | Att | Correct | Lucky | Shaky | Status | Last | Score | Angle |
+|---|---|---|---|---|---|---|---|---|---|---|
+| | | | | | | | | | | |
+
+<!-- Angle = the single code last used to probe this topic, from format.md's angles list. -->
 
 <!-- Score = weakness priority. quiz writes it after grading, so the next session only sorts. -->
 <!-- (1-accuracy)×3 + lucky_rate×2 + shaky_rate×1 + domain_weight + staleness -->

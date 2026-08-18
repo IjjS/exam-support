@@ -72,6 +72,15 @@ LEAST amount of downtime   MOST scalable
 The point: **changing the keyword must change the answer.** Otherwise `misread` errors never surface.
 A question whose answer is the cost-optimal option must include a "faster but pricier" distractor.
 
+### Record which angle you used
+
+Every question lands on exactly one of the codes in `format.md`'s `angles:` list. Decide it while writing the
+question, not afterwards, and hand it to Phase 5 so it reaches `mastery.Angle`.
+
+- **One code per question.** No pairs, no compound labels — `cost`, not `scn:cost`
+- Use `other` when nothing fits rather than inventing a code. A code that appears once is noise
+- Attempts per topic are usually 1-3, so remembering only the most recent angle is enough resolution
+
 ---
 
 ## Re-asking rules
