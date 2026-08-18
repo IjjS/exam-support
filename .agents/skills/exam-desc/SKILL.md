@@ -135,7 +135,8 @@ one recorded that day.
 
 **Explain anyway.** Do not stop to do bookkeeping.
 
-1. Check official documentation and explain from it, citing the source
+1. Check official documentation and explain from it, citing the source.
+   What counts as official is in `_spec/source-policy.md` — read it if a source looks borderline
 2. If the web has nothing usable, explain from your own knowledge tagged `[미검증]`
 3. Then, as the footer, offer to queue it
 

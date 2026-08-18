@@ -89,7 +89,7 @@ Then continue at Phase 1 with those targets. One neighbor → `vs-{a}-{b}.md`; t
 
 ```
 1. The targets have notes                           → note-based
-2. Otherwise                                        → vendor official docs (follow source-policy), cite sources
+2. Otherwise                                        → vendor official docs (`_spec/source-policy.md`), cite sources
 3. Web also fails                                   → [UNVERIFIED] label
 ```
 

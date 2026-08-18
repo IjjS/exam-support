@@ -1,6 +1,13 @@
 # Source policy
 
-Required reading for every collecting subagent, and for `exam-init` Phase 4.
+The policy of record for what may back a claim. Referenced by `exam-init` (Phase 4), `exam-comp`, and `exam-desc`.
+
+**Collecting subagents do not read this file** — they get the operational subset in
+`exam-harvest/references/harvest-policy.md`. This one carries the reasoning, which is what you need when
+*changing* the policy rather than following it.
+
+`exam-quiz` must never read this file either. Questions may draw on A, B, or C; that one line lives inline in
+the skill, and a 2k policy document has no business in the hot path.
 
 Sources are graded A/B/C. **The grade decides what the source may be used for**, not just whether it is allowed.
 
@@ -67,22 +74,34 @@ Handle with two cautions:
 
 - Answer keys are **community-reconstructed**, not official — CBT sittings do not publish 확정답안. Page titles on the
   site openly carry revision notes (`78번 내용 변경 및 해설 수정`), so errors do get found and fixed
-- **Corroborate before treating one as settled.** The same conclusion appearing across two or more sittings is strong;
-  a single question is a lead. If a statute or a statistic is involved, verify against Tier A (`law.go.kr`, `kosis.kr`)
-  and let Tier A win
+- **Corroborate before treating one as settled.** The same conclusion appearing across two or more sittings is
+  strong; a single question is a lead. Tier A wins any disagreement
 
-## Tier C — Format reference only. **Never a fact**
+## Tier C — A lead, never a source
 
-| Source | Allowed use |
+| Source | |
 |---|---|
-| `comcbt.com` 해설, comments, user commentary | ✅ Format analysis, distractor patterns, topic frequency |
-| **`examtopics.com`** — questions, community answers, discussion | ✅ Format analysis, distractor patterns, topic frequency |
-| | ❌ **Never the factual basis for a note** |
-| | ❌ **Never copied into an explanation** |
-| | ❌ **Never treated as a verified answer key** |
+| `examtopics.com` — questions, community answers, discussion | |
+| `comcbt.com` 해설, comments, user commentary | |
 
-Read these for **shape**: stem length, option count, single vs multiple response, how requirement keywords are phrased,
-what a plausible distractor looks like. Then close the tab. Nothing read here may end up as a claim in a note.
+Two legitimate uses, and they are both about **what to look at**, never about what is true.
+
+**1. Format analysis.** Stem length, option count, single vs multiple response, how requirement keywords are
+phrased, what a plausible distractor looks like. This is what `exam-init` Phase 4 uses it for.
+
+**2. A lead for harvest.** Tier C shows what actually gets tested. Treat any claim it makes as a hypothesis:
+
+```
+C says X is the answer   →   confirm X against an A or B source
+                         →   confirmed:      write the note, cite the A/B source that confirmed it
+                         →   not confirmed:  no note. Report it and move on
+```
+
+The note ends up citing the source that did the confirming. **A `[C]` citation never appears in a note.**
+
+Questions are different: `exam-quiz` may build a question on a Tier C page it fetched, because a question is
+generated fresh each time and nothing is stored. A note is stored and re-read for months, which is why it
+holds to a higher bar.
 
 ### Why examtopics is C and not B
 

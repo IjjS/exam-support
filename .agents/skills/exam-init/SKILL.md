@@ -138,7 +138,7 @@ Skipping this means generating plausible-looking questions that don't match the 
    - Anthropic: official exam information pages
    - Third-party past-question sites — `comcbt.com` (domestic), `examtopics.com` (vendor) — are permitted
      **for format analysis only.** Read the question shape; never carry over answers or explanations, and never cite
-     them in a note. See `exam-harvest/references/source-policy.md`
+     them in a note. See `_spec/source-policy.md`
 2. Analyze and fill `format.md` — type mix, stem length, question phrasings, requirement keywords, distractor patterns, prohibitions
    - **Derive the `angles:` vocabulary here too.** 4-8 short codes naming the axis this exam varies along:
      requirement keywords for a scenario-heavy exam, question types otherwise. Fix them explicitly — a free-form

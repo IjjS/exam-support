@@ -99,7 +99,7 @@ If `format.md` has no `angles:` list, skip this entirely — there is no axis to
 
 ## Phase 3 — Question generation
 
-**Read `references/quiz-rules.md` before writing any question.**
+The generation rules are at the bottom of this file, under **Question generation rules**. Follow them.
 
 Follow `format.md` for the single/multiple-response mix, stem length, phrasing, and distractor patterns.
 
@@ -110,6 +110,10 @@ Follow `format.md` for the single/multiple-response mix, stem length, phrasing, 
 2. No note                           →  verify against vendor official docs via WebSearch/WebFetch
 3. Web also fails                    →  Claude's own knowledge, tagged [UNVERIFIED]
 ```
+
+Tier 2 may draw on **any of A, B, or C** — a question is generated fresh each time and nothing is stored, so it
+holds to a lower bar than a note. Tag the source in the explanation. **Do not read `_spec/source-policy.md`;**
+that is 2.3k in the hot path to learn one sentence.
 
 **Tier 2 is capped at two questions per session.** Anything beyond that falls to tier 3.
 A slow start on a phone means the tool stops getting used — speed beats accuracy here.
@@ -167,157 +171,158 @@ functions as a leak.
 
 ### Before sending, verify
 
-```
-□ Does the 답변 line match the template exactly, with no per-question example?
-□ Does any example string have as many slots as there are questions?  → if yes, remove it
-□ Does any text before the user's reply name, rank, or hint at a correct option?
-```
-
-If any check fails, rewrite before sending. **Nothing preceding the user's answer may narrow the option set.**
-
-## Phase 4 — Grading
-
-### Parsing answers
+One checklist, run over the whole message. Any failure means rewrite before sending.
 
 ```
-2       confident
-2?      shaky
-2??     guessed    lucky (recorded as wrong even when correct)
-2,4     multiple response
-2,4??   multiple response, guessed
+Per question
+  □ Solvable from the wording alone, without the knowledge?   → failed
+  □ Answer unchanged if the requirement keyword changes?      → the requirement is decoration
+  □ All distractors plausible to someone who does not know?
+  □ Correct option in the same slot as the previous question?
+  □ Stem inside format.md's word range?
+  □ A "multiple response" question with only one correct option?
+
+Whole message
+  □ 답변 line matches the template exactly, no per-question example?
+  □ Any example string with as many slots as there are questions?  → remove it
+  □ Anything naming, ranking, or hinting at a correct option?
 ```
 
-- Multiple response has **no partial credit.** Exact match only. Record `partial 1/2` in the notes column
-- No question mark means confident. If parsing is ambiguous, assume confident and move on — do not ask again
+**Nothing preceding the user's answer may narrow the option set.**
 
-### Verdict
+---
 
-Scoring and the review queue are **two separate decisions.** A question can score as correct and still
-belong in the wrongbook.
+# Question generation rules
 
-| Answer | Scored | Wrongbook | origin |
-|---|---|---|---|
-| correct + confident | correct | — | |
-| **correct + `?`** | **correct** | **✅ added** | `shaky` |
-| correct + `??` | **wrong** | ✅ added | `lucky` |
-| wrong | wrong | ✅ added | `miss` |
+Everything below governs how a question is written. It used to live in `references/quiz-rules.md`;
+Phase 3 always runs, so a separate file only bought a round-trip.
 
-- **`??` is scored as wrong.** Getting it right by guessing is not knowing it. Do not soften this
-- **`?` is scored as correct but still queued.** The user narrowed it to two and happened to pick right;
-  that is a coin flip they won. It goes in the review queue without being punished in the score
-- Accuracy stays `(correct - lucky) / attempts`. Shaky answers were genuinely correct, so they count —
-  the wrongbook entry is how they get revisited, not a score penalty
+## First principle — zero hints
 
-Record the origin on every wrongbook entry. Three different signals need three different treatments.
+**Only someone who knows should get it right.** If the answer is visible from the wording alone, the question failed.
 
-### Older wrongbooks without the origin column
+Forbidden:
+- Answer-signalling modifiers: `(recommended)`, `(best practice)`, `(the safest)`
+- Length bias — the correct option noticeably longer or shorter than the rest
+- Specificity bias — only the correct option is concrete while distractors are vague
+- `All of the above`, `None of the above`
+- Negations (`NOT`, `EXCEPT`) — real vendor exams rarely use them
+- Logical containment between options (if A contains B, elimination solves it)
 
-A book created before origin tracking has no `origin` or `Streak` column. Do not rewrite its history.
+Required:
+- **Randomize the correct position.** Never the same slot five questions in a row
+- Every distractor must look plausible to someone without the knowledge
+- Consistent option formatting, tense, and sentence structure
 
-- Add the two columns, leaving them blank on existing rows
-- A blank origin is treated as `miss` (the strictest bar: 3 confident correct)
-- New rows get a real origin
-- Refresh the hot block to the `active: n (miss / lucky / shaky)` form, counting blanks as `miss`
+---
 
-Say in one line that the format was extended. Never guess an origin for a past entry — the information was
-not recorded, and inventing it would corrupt the one dataset that cannot be regenerated.
+## Format comes from format.md
 
-### Explanations — every option, one line each
+Stem length, single/multiple ratio, option count, question phrasing, and distractor patterns are **owned by `format.md`**.
+Do not invent them here. Use the anchors there for tone, but **never reuse an anchor's subject matter.**
 
-**Every question gets a verdict on every option**, including questions answered correctly.
-Knowing why the other four fail is the discrimination the exam actually tests.
+Under `format_type: performance` (CKA and similar), produce task instructions instead of options:
+`"Write the kubectl command that ..."` / `"Write a manifest satisfying ..."` → grade against a reference answer.
 
-```
-Q3   정답 4   내 답 2 ✗
+---
 
-  1  ✗  리전 간 전이 라우팅 불가
-  2  ✗  동작은 하나 운영부담 큼 — "LEAST operational overhead" 위반
-  3  ✗  DX는 구축에 수 주 — "quickly" 위반
-  4  ✓  TGW + VPN. 요구조건 3개 충족
-  5  ✗  실재하지 않는 조합
-```
+## Difficulty definitions
 
-- **One line per option. No prose, no paragraph under any option.** The fixed shape is what keeps this
-  readable on a phone and what stops explanations from expanding
-- Name the reason, not just the verdict. `"운영부담 위반"` beats `"틀림"`; where a distractor pattern applies
-  (`D1` legacy bait, `D2` over-engineering …) name it — the pattern is more memorable than the instance
-- Show `내 답` only when it differs from the answer
-- For multiple response, mark every correct option `✓`
-
-If the user asks for depth on a specific question after seeing this, give it then. Do not pre-empt it.
-
-### Classifying what goes in the wrongbook
-
-For every `miss`, `lucky`, and `shaky` entry, **read `_spec/error-taxonomy.md`** and assign a type.
-Skip that read entirely if all five were confident and correct.
-
-`shaky` almost always classifies as `confusion` — "I narrowed it to two" is the definition of a blurred
-boundary. If the user names the other option they were weighing, record the pair; it becomes an `exam-comp` candidate.
-
-## Phase 5 — Recording
-
-### Show the results before writing anything
-
-**Emit the graded output as text first.** Only then touch files.
-
-The user has been waiting since they hit send; the verdicts are what they are waiting for, and every file write
-placed ahead of them is dead time. Once the results are on screen they start reading, and the writes happen
-underneath that.
-
-### Then issue the writes together, not in sequence
-
-These six touch six different files and **none of them reads another's output**. Issue them as parallel tool
-calls in a single step. Sequencing them multiplies the wait for no benefit.
-
-The one thing to settle *before* writing is the `W-id` for each new wrongbook entry — the log delta and the
-wrongbook row both reference it. That is a decision, not a file read, so it does not force an order.
-
-| File | Update |
+| | Criterion |
 |---|---|
-| `state/log/{YYYY-MM}.md` | **Short delta only** — the question block is already there from Phase 3. Append one result line per question: answer, the user's pick, confidence, `W-id`, per-option verdicts |
-| `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score** / **the angle just used**. Refresh the hot block |
-| `state/wrongbook.md` | Add one line per `miss` / `lucky` / `shaky`, with its origin. Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md`. Refresh the hot block |
-| `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) |
-| `state/harvest-queue.md` | Queue tier 2/3 topics with the `Source` URL where one exists, plus `unknown` and `thin-note` cases |
-| `exams/_registry.md` | Update this slug's coverage, accuracy, session count |
+| easy | A single concept. Knowing the definition and purpose solves it |
+| medium | Two concepts combined, or one requirement applied |
+| hard | Two or more requirements in tension (cost vs availability), or multiple response, or a whole-architecture judgment |
 
-**Do not modify `blueprint.md`.**
+Per-mode distribution is in the SKILL.md table.
 
-### The log result line — the anchor that makes the log searchable
+---
 
-The question block went in during Phase 3 under `### S12-Q3 — T-034 · …`. The delta closes it:
+## Question types
 
-```
-**결과**  정답 4 · 내 답 2 ✗ · W-001 · confusion
-  1 ✗ 리전 간 전이 라우팅 불가
-  2 ✗ 동작은 하나 운영부담 큼 — "LEAST operational overhead" 위반
-  3 ✗ DX는 구축에 수 주 — "quickly" 위반
-  4 ✓ TGW + VPN. 요구조건 3개 충족
-  5 ✗ 실재하지 않는 조합
-```
+Mix types within a session.
 
-- The `W-id` on the result line is what `exam-desc` greps for. It sits **below** the question, so a lookup reads a
-  window that starts above the match
-- Omit the `W-id` for confident-correct answers — nothing to look up later
-- A re-asked entry keeps the **same `W-id`** across months, which is what gives the entry a history
+| Type | What it probes |
+|---|---|
+| Scenario selection | The configuration that satisfies the requirements (**primary — most of SAP**) |
+| Comparative | Which of several similar services fits this situation |
+| Behavior prediction | What happens under this configuration |
+| Diagnosis | What causes this symptom |
+| Limits and numbers | Constraints and quotas (validates the `recall` error type) |
 
-## Phase 6 — Wrap-up, 3 lines or fewer (Korean)
+---
+
+## Requirement keywords
+
+Include **at least one per question** from the list registered in `format.md`, spread evenly across the session.
 
 ```
-3/5  (실질 2/5 — Q4는 찍어서 맞음)
-🟥 T-041 TGW 라우팅 2연속 오답 · 개념혼동 → /exam-comp 로 비교표 권장
-큐 7개 쌓임. /exam-harvest 3 (약 2분)
+MOST cost-effective        LEAST operational overhead
+MOST secure                MOST resilient / highly available
+LEAST amount of downtime   MOST scalable
 ```
 
-- With three or more queued topics, always nudge harvest. Thin notes degrade question quality and the tool stops getting used
-- Mention coverage in one line if it moved
-- When `basic_done` reaches 3, say that weakness mode takes over from the next session
+The point: **changing the keyword must change the answer.** Otherwise `misread` errors never surface.
+A question whose answer is the cost-optimal option must include a "faster but pricier" distractor.
+
+### Record which angle you used
+
+Every question lands on exactly one of the codes in `format.md`'s `angles:` list. Decide it while writing the
+question, not afterwards, and hand it to Phase 5 so it reaches `mastery.Angle`.
+
+- **One code per question.** No pairs, no compound labels — `cost`, not `scn:cost`
+- Use `other` when nothing fits rather than inventing a code. A code that appears once is noise
+- Attempts per topic are usually 1-3, so remembering only the most recent angle is enough resolution
+
+---
+
+## Re-asking rules
+
+When bringing back an active wrong answer:
+
+- **Never reuse the wording.** Remembering a sentence is not knowing the material
+- Same knowledge, different angle: scenario selection → behavior prediction, swap the requirement, change the service mix
+- Always move the correct option to a different position
+- For `confusion` errors, **put the confused pair in the same option set** to force the distinction
+
+### Retiring an entry
+
+A streak only advances on a **confident correct** answer. Any `?` or `??` resets it to zero — the entry is in the
+book precisely because certainty is what is missing.
+
+| origin | Streak needed |
+|---|---|
+| `miss` · `lucky` | **3** consecutive confident correct |
+| `shaky` | **2** consecutive confident correct |
+
+Shaky clears faster on purpose. The evidence of not-knowing is weaker to begin with, and holding these to the same
+bar as real misses would bloat the active list, which quiz reads every session.
+
+---
+
+## Sourcing and labels
+
+| Source | Label |
+|---|---|
+| Note | none (default) |
+| Web-verified | source URL at the end of the explanation |
+| Claude's knowledge | **`[UNVERIFIED]`** |
+
+Never omit the `[UNVERIFIED]` label. A distracting tag beats memorizing something false.
+
+---
+
+---
+
+## Phase 4 onward
+
+When the answers arrive, **read `references/grading.md`** and follow it. Do not grade from memory —
+the verdict table, the origin rules, and the six writes are all specified there.
 
 ## Never
 
 - Hint at the answer in the options (`(recommended)`, length bias, `All of the above`)
 - Re-ask a previous question with its original wording
-- Write a long explanation for a question answered correctly
 - Read `blueprint.md` or `state/log/`
 - **Reveal, rank, or hint at answers before the user responds — including inside a formatting example.**
   A worked answer-syntax string is the most common way this happens; see the guard in Phase 3

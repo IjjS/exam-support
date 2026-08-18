@@ -41,14 +41,17 @@ exam-init           _inbox/ · _sources/ · web         blueprint · format · e
                     _template/                        mastery (init) · _active · _registry
 
 exam-harvest        _inbox/ · _sources/ · web         notes/ · notes/_compare/ · _facts
-  └─ subagent       official docs                     notes/{domain}/{topic}.md  ← only this
+  └─ subagent       harvest-policy.md · official      the one note file  ← only this
+                    docs                              (never anything under state/)
                     format.md (limit=14)              harvest-queue · format-drift
                                                       _registry (own row)
 
 exam-quiz           _active · sessions (limit=15)     mastery · wrongbook · _resolved
                     mastery · wrongbook · format      sessions · harvest-queue · log/
                     notes/{5 topics}                  _active (on switch) · _registry (own row)
+                    grading.md (at Phase 4)
                     error-taxonomy (only on a miss)
+                    never _spec/source-policy.md
 
 exam-status         _registry  ·  or the full set     nothing   (--rebuild is the one exception)
                     for the active exam
@@ -141,7 +144,7 @@ Korean-character rate 1.2 tok/char, ASCII 3.6 chars/tok.
 | Item | Measured | Note |
 |---|---|---|
 | CLAUDE.md | **1.2k** | auto-loaded every session |
-| exam-quiz SKILL.md + quiz-rules.md | **3.7k** | |
+| exam-quiz SKILL.md (rules merged in) | **3.9k** | loaded at activation; grading.md 1.7k loads later, during thinking time |
 | format.md | **2.6k - 2.8k** | the two anchors are full-length exam scenarios |
 | mastery.md (whole) | **3.4k - 3.9k** | 102-120 rows; Korean topic names cost ~4x English |
 | sessions.md via `Read(limit=15)` | **0.1k** | working as designed |

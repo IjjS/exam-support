@@ -85,7 +85,11 @@ Return: {topic id, file path, source count, one-line summary, drift observations
 Subagents must not modify anything under `state/` — that is how parallel-write corruption is avoided.
 The main session aggregates queue and drift updates.
 
-Instruct each subagent to read `references/source-policy.md` and `references/note-template.md`.
+Instruct each subagent to read **`references/harvest-policy.md`, and nothing else.** It carries the source
+rules, the citation format, the note skeleton, and the return format in one place.
+
+The full policy in `_spec/source-policy.md` is for the main session and for changing the policy — sending it to
+five subagents costs 2.3k each to answer questions they were never going to ask.
 
 ## Phase 3 — Aggregation
 
