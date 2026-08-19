@@ -8,6 +8,7 @@ verified_at:   {{VERIFIED_AT}}
 domains:       {{DOMAIN_WEIGHTS}}
 mcq_ratio:     {{MCQ_RATIO}}
 stem_words:    {{STEM_WORDS}}
+difficulty_mix: {{DIFFICULTY_MIX}}
 ```
 <!-- /DRIFT-CHECK -->
 
@@ -18,6 +19,17 @@ command/manifest authoring tasks instead of options.
 
 ## Question composition
 {{QUESTION_TYPES}}
+
+## Difficulty
+
+```text
+E: {{DIFFICULTY_EASY}}
+M: {{DIFFICULTY_MEDIUM}}
+H: {{DIFFICULTY_HARD}}
+gate: {{DIFFICULTY_GATE}}
+```
+
+Use `difficulty_mix` for the resolved quiz mode. Option count and multiple-response never determine difficulty by themselves.
 
 ## Stem structure
 {{STEM_STRUCTURE}}

@@ -6,8 +6,8 @@ The policy of record for what may back a claim. Referenced by `exam-init` (Phase
 `exam-harvest/references/harvest-policy.md`. This one carries the reasoning, which is what you need when
 *changing* the policy rather than following it.
 
-`exam-quiz` must never read this file either. Questions may draw on A, B, or C; that one line lives inline in
-the skill, and a 2k policy document has no business in the hot path.
+`exam-quiz` must never read this file either. Its inline rule is enough: C may lead the scenario, but A/B must
+verify the answer. A 2k policy document has no business in the hot path.
 
 Sources are graded A/B/C. **The grade decides what the source may be used for**, not just whether it is allowed.
 
@@ -84,7 +84,7 @@ Handle with two cautions:
 | `examtopics.com` — questions, community answers, discussion | |
 | `comcbt.com` 해설, comments, user commentary | |
 
-Two legitimate uses, and they are both about **what to look at**, never about what is true.
+Three legitimate uses, all about **what to look at**, never about what is true.
 
 **1. Format analysis.** Stem length, option count, single vs multiple response, how requirement keywords are
 phrased, what a plausible distractor looks like. This is what `exam-init` Phase 4 uses it for.
@@ -99,9 +99,11 @@ C says X is the answer   →   confirm X against an A or B source
 
 The note ends up citing the source that did the confirming. **A `[C]` citation never appears in a note.**
 
-Questions are different: `exam-quiz` may build a question on a Tier C page it fetched, because a question is
-generated fresh each time and nothing is stored. A note is stored and re-read for months, which is why it
-holds to a higher bar.
+**3. A lead for quiz generation.** Questions may use Tier C for the tested combination, scenario shape, and
+distractor traps, but never for truth.
+`exam-quiz` writes fresh wording, then confirms the correct answer and every discriminating claim against A or B.
+Verified questions show no source label; failed verification stays `[UNVERIFIED]`. Questions are archived in the
+cold log but never reused as a knowledge source.
 
 ### Why examtopics is C and not B
 
@@ -133,8 +135,8 @@ Unofficial cheat sheets
 
 No information beats wrong information.
 
-Note that the Tier C entries are **whitelisted for format only.** Being on the list is not permission to treat their
-content as true — it is permission to look at the shape of their questions. The tier is the constraint, not the listing.
+Tier C entries are whitelisted for format analysis and quiz leads only. Being listed is never permission to treat their
+content or answer as true; A/B verification is the gate.
 
 ---
 

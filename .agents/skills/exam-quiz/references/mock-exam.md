@@ -17,17 +17,19 @@ and drop the previous batch's stems and options from context.
 With no count given, **recommend 30**. If the user asks for the real count (SAP has 75), state the expected time
 and batch count first and get confirmation.
 
-## Notes are not read
+## Sources
 
 The purpose of a mock exam is **exam feel and the shape of your weak domains**, not precise verification.
 Generate from mastery's topic names plus `format.md` alone. This differs from weakness mode, which reads five notes.
 
-Three-tier sourcing does not apply either. Run without web lookups and tag uncertain items `[UNVERIFIED]`.
+For each batch, use Tier C only for scenario/trap leads, draft fresh wording, and verify every answer discriminator
+against A/B as defined by the main skill. Batch the lookups. Verified questions carry no source label; failed verification
+keeps `[UNVERIFIED]`.
 
 ## Composition
 
 - **Domain weights exactly as the real exam** — no weakness weighting; the point is realism
-- Even difficulty distribution
+- Difficulty distribution and rubric straight from `format.md`
 - Single/multiple ratio straight from `format.md`
 - ⬜ untested topics are included normally
 

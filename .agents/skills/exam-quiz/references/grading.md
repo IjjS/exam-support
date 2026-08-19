@@ -88,7 +88,7 @@ reference it — but that is a decision, not a read, so it forces no order.
 | `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score** / **the angle just used**. Refresh the hot block |
 | `state/wrongbook.md` | Add one line per `miss` / `lucky` / `shaky`, with its origin. Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md`. Refresh the hot block |
 | `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) |
-| `state/harvest-queue.md` | Queue tier 2/3 topics with the `Source` URL where one exists, plus `unknown` and `thin-note` cases |
+| `state/harvest-queue.md` | Queue `no-note`, `exhausted`, and `unverified-question` topics with the A/B verifier URL where one exists, plus `unknown` and `thin-note` cases |
 | `exams/_registry.md` | Update this slug's coverage, accuracy, session count |
 
 **Do not modify `blueprint.md`.**

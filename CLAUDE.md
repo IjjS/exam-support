@@ -19,7 +19,7 @@ Designed to be driven from a phone via remote control of this Mac. **Short outpu
 1. **Topic IDs (`T-041`) are permanent** — never reissue, reuse, or delete one. If sections are reorganized, keep the ID and change only the section column. Mark removed topics `deprecated`; never delete the row. Do not encode the section into the ID.
 2. **Hot block at the top of state files** — aggregates live in the first 15 lines. Use `Read(limit=N)` instead of loading the whole file.
 3. **`state/log/` is write-only in the loop** — `exam-quiz` must never read it, at all. `exam-desc` may, only for an entry the user named, and only with grep-then-bounded-read. Log headings carry the `W-id` so that lookup is an index hit, not a scan.
-4. **Notes and questions hold to different bars.** A note may be backed only by Tier A (official) or B (user files, published past papers) — **Tier C is a lead, never a citation**: confirm the claim against A or B, then cite what confirmed it. A question may draw on any tier, because it is generated fresh and nothing is stored. Record source and date every time. See `_spec/source-policy.md`.
+4. **Notes and questions hold to different bars.** Notes use only Tier A/B. Questions may use Tier C for scenario leads, but confirm every answer discriminator against A/B or mark `[UNVERIFIED]`. Questions are archived only in the cold log. Record source and date every time. See `_spec/source-policy.md`.
 5. **Subagents write files themselves and return only a summary** — never return note bodies into the main context.
 6. **Only `/exam-init --format` may modify `format.md`** — harvest records observations in `state/format-drift.md` and nothing more.
 7. **`blueprint.md` is an immutable spec** — coverage, accuracy, and every mutable value live in `state/mastery.md`. quiz neither reads nor writes blueprint.
@@ -64,7 +64,7 @@ exams/{slug}/
     harvest-queue.md Topics awaiting notes
     format-drift.md  Observed exam-format changes
     log/{YYYY-MM}.md Full question text, W-id anchored (quiz never reads; desc on request only)
-    _archive/        Reset backups, superseded format versions
+    _archive/        Reset backups
 ```
 
 ## Write permissions

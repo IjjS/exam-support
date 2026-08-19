@@ -44,21 +44,17 @@ basic_done >= 3  →  weakness mode (default)
 
 An explicit user instruction wins: domain (`D2`), question count (`10문제`), mock exam.
 
-| Mode | Topic selection | Difficulty |
-|---|---|---|
-| Basic (diagnostic) | **⬜ untested first**, allocated by blueprint weight | easy 20 / med 40 / hard 40 |
-| Weakness | Top scores + lucky-guess topics + active wrong answers | med 30 / hard 70 |
-| Section | Same rules inside the named section | med 40 / hard 60 |
-| Mock exam | → `references/mock-exam.md` | Real weights |
+| Mode | Topic selection |
+|---|---|
+| Basic (diagnostic) | **⬜ untested first**, allocated by blueprint weight |
+| Weakness | Top scores + lucky-guess topics + active wrong answers |
+| Section | Same rules inside the named section |
+| Mock exam | → `references/mock-exam.md` |
 
 Default is **5 questions**. Announce the resolved mode in one line before starting.
 
-Difficulty is a ratio, so it scales: at 5 questions the diagnostic mix is 1 easy / 2 medium / 2 hard.
-Round to the nearest whole question and let medium absorb the remainder.
-
-**The diagnostic leans hard on purpose.** A question everyone passes carries almost no information about where
-the blind spots are; the discriminating ones sit near the edge of what the user can actually do. Sessions 1-3
-are the measurement, so they are weighted to measure rather than to encourage.
+Take both the difficulty rubric and the resolved mode's ratio from `format.md`. Scale the ratio by largest remainder.
+If either is missing, stop with `/exam-init --format`; never invent a cross-exam fallback.
 
 ## Phase 2 — Topic selection
 
@@ -110,12 +106,13 @@ The generation rules are at the bottom of this file, under **Question generation
 
 Follow `format.md` for the single/multiple-response mix, stem length, phrasing, and distractor patterns.
 
-### Three-tier sourcing
+### Source pipeline
 
 ```
-1. the topic's note exists           →  generate from the note only
-2. No note, or the note is exhausted →  verify against vendor official docs via WebSearch/WebFetch
-3. Web also fails                    →  Claude's own knowledge, tagged [UNVERIFIED]
+usable note       → generate from the note
+no/exhausted note → Tier C lead → fresh draft → verify against A/B
+no Tier C hit     → model draft → verify against A/B
+verification fails → [UNVERIFIED]
 ```
 
 **Read exactly the notes for the topics you selected — five files, in full, and nothing else.**
@@ -129,11 +126,11 @@ that and you are rewording a question already asked, which is exactly the failur
 
 ```
 mastery.Att >= 4  and the note has not been updated since
-        ├─ this question:  tier 2 allowed, inside the usual 2-per-session cap
+        ├─ this question:  use the source pipeline
         └─ the queue:      add with reason `exhausted`
 ```
 
-Both halves matter. Tier 2 rescues this question; the queue entry means harvest deepens the note so the topic
+Both halves matter. The source pipeline rescues this question; the queue entry means harvest deepens the note so the topic
 stops needing rescuing. `exhausted` is not `thin-note` — the note was adequate and got used up, so harvest
 should extend it rather than start over.
 
@@ -144,21 +141,17 @@ costs a repeated question on the topic the user is worst at.
 This bites hardest in weakness mode, where a stubborn topic returns every second or third session. That topic
 is also the one most in need of varied probing, so leaving it on a spent note is the worst place to economize.
 
-**Manual override.** `"웹도 써서"`, `"새로운 각도로"`, `"더 어렵게"` lifts the note-only restriction for the
-session regardless of `Att`. The user cannot see when a note is spent — that is internal state — so the automatic
-trigger is the primary path and this is the escape hatch.
+**Manual override.** `"웹도 써서"`, `"새로운 각도로"`, `"더 어렵게"` forces this pipeline even when a note is usable.
 
-Tier 2 may draw on **any of A, B, or C** — a question is generated fresh each time and nothing is stored, so it
-holds to a lower bar than a note. Tag the source in the explanation. **Do not read `_spec/source-policy.md`;**
-that is 2.3k in the hot path to learn one sentence.
+Tier C is a **lead only**: extract the tested service combination, scenario shape, and distractor traps. Never copy its
+wording or trust its answer. Verify the correct answer and every capability, limit, or trade-off that distinguishes an
+option against vendor official docs (A) or a user source (B). Batch searches across selected topics when possible.
 
-**Tier 2 is capped at two questions per session.** Anything beyond that falls to tier 3.
-A slow start on a phone means the tool stops getting used — speed beats accuracy here.
+Do not read `_spec/source-policy.md`; the operational rule above is complete. There is no per-session verification cap.
+When A/B verification succeeds, show **no source label**. When it fails, keep `[UNVERIFIED]`.
 
-Every topic sourced via tier 2 or 3 goes into `harvest-queue.md` (reason: `unverified-question`).
-
-**Tier 2 queues the URL it just used**, in the queue's `Source` column. You paid to find and verify that page;
-harvest would otherwise search for it again from scratch. Tier 3 leaves `Source` empty — there was nothing to record.
+Queue no-note topics as `no-note`, exhausted notes as `exhausted`, and failed verification as `unverified-question`.
+Put the A/B verifier URL in `Source`; leave it empty only when verification failed.
 
 ### Presentation
 
@@ -190,7 +183,16 @@ Heading carries a session-question ref, since no wrongbook ID exists yet:
 ### S12-Q3 — T-034 · D2 · Database replication · hard · single · [UNVERIFIED]
 ```
 
-Write the stem, the options, and nothing else. Verdicts and the `W-id` come later as a short delta.
+Omit any source label for note-backed or A/B-verified questions; never emit `[WEB]`. After the options, record an
+invisible log-only comment. Use one exact form:
+
+```html
+<!-- source: note path (updated date) -->
+<!-- source: lead [C] URL · verified [A|B] locator (date) -->
+<!-- source: model|lead URL · unverified (date) -->
+```
+
+Use `[UNVERIFIED]` visibly only with the third form. Verdicts and the `W-id` come later as a short delta.
 
 ### ⛔ The answer-syntax line must not carry answers
 
@@ -215,6 +217,7 @@ Per question
   □ Solvable from the wording alone, without the knowledge?   → failed
   □ Answer unchanged if the requirement keyword changes?      → the requirement is decoration
   □ All distractors plausible to someone who does not know?
+  □ Meets format.md's assigned difficulty after writing? Multiple-response alone does not count
   □ Correct option in the same slot as the previous question?
   □ Stem inside format.md's word range?
   □ A "multiple response" question with only one correct option?
@@ -260,18 +263,6 @@ Do not invent them here. Use the anchors there for tone, but **never reuse an an
 
 Under `format_type: performance` (CKA and similar), produce task instructions instead of options:
 `"Write the kubectl command that ..."` / `"Write a manifest satisfying ..."` → grade against a reference answer.
-
----
-
-## Difficulty definitions
-
-| | Criterion |
-|---|---|
-| easy | A single concept. Knowing the definition and purpose solves it |
-| medium | Two concepts combined, or one requirement applied |
-| hard | Two or more requirements in tension (cost vs availability), or multiple response, or a whole-architecture judgment |
-
-Per-mode distribution is in the SKILL.md table.
 
 ---
 
@@ -337,15 +328,10 @@ bar as real misses would bloat the active list, which quiz reads every session.
 
 ---
 
-## Sourcing and labels
+## Source labels
 
-| Source | Label |
-|---|---|
-| Note | none (default) |
-| Web-verified | source URL at the end of the explanation |
-| Claude's knowledge | **`[UNVERIFIED]`** |
-
-Never omit the `[UNVERIFIED]` label. A distracting tag beats memorizing something false.
+Note-backed and A/B-verified questions have no visible source label. Never use `[WEB]`.
+Use `[UNVERIFIED]` only when the verification step failed; never omit it in that case.
 
 ---
 

@@ -144,8 +144,13 @@ Skipping this means generating plausible-looking questions that don't match the 
      requirement keywords for a scenario-heavy exam, question types otherwise. Fix them explicitly — a free-form
      label drifts (`cost` / `cost-effective` / `비용`) and stops being comparable across sessions.
      Leave it empty rather than guessing if the samples show no consistent axis
+   - **Derive the difficulty profile here too.** Classify the samples by reasoning depth, not option count:
+     `E` direct recall; `M` two concepts or one decisive constraint with competing options; `H` multi-step judgment
+     with at least two viable designs separated by conflicting requirements. Multiple-response alone never raises difficulty.
+     Write compact E/M/H criteria plus per-mode ratios (`diagnostic`, `weakness`, `section`, `mock`) to `format.md`;
+     every ratio must total 100. Mark them `[ESTIMATED]` when fewer than five usable samples exist.
 3. **Synthesize two anchors** — never copy originals. Same format, different subject. Different domains, one single-select and one multiple-response
-4. Fill the DRIFT-CHECK block at the top (harvest compares against just those 8 lines)
+4. Fill the compact DRIFT-CHECK block at the top (harvest reads it with a bounded read)
 
 If no samples can be found, draft from the typical format of that vendor and family and mark **every field `[ESTIMATED]`**.
 Tell the user: `"샘플을 찾으면 /exam-init --format 으로 갱신하세요"`.
@@ -196,7 +201,7 @@ intact so nothing looks broken until `/exam-status` comes up short.
 ```
 AWS SAP-C02 등록 완료  D-42
 도메인 4개 / 토픽 79개 (전부 ⬜)
-형식: 5지선다 · 단일 70 / 다중 30 · 지문 평균 110단어
+형식: 5지선다 · 단일 70 / 다중 30 · 지문 평균 110단어 · 난도 E10/M40/H50
 노트 0개 — /exam-harvest 로 시작하거나, 바로 /exam-quiz 로 진단 3회부터
 ```
 
@@ -204,10 +209,9 @@ AWS SAP-C02 등록 완료  D-42
 
 ## --format re-run
 
-1. Preserve the current `format.md` at `state/_archive/format-{version}-{date}.md`
-2. Re-run Phase 4, refreshing `guide_version` and `verified_at`
-3. Mark the related entries in `state/format-drift.md` as `applied (v{new}, {date})`
-4. If domain weights changed, continue into **blueprint migration**
+1. Re-run Phase 4 and replace `format.md`, refreshing `guide_version` and `verified_at`
+2. Mark the related entries in `state/format-drift.md` as `applied (v{new}, {date})`
+3. If domain weights changed, continue into **blueprint migration**
 
 ### Blueprint migration
 

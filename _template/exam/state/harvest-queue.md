@@ -5,7 +5,7 @@
 pending: 0  (high 0 / normal 0 / low 0)
 ```
 
-Reasons: `unknown` `thin-note` `exhausted` `unverified-question` `confusion` `frequent-error` `untested`
+Reasons: `unknown` `no-note` `thin-note` `exhausted` `unverified-question` `confusion` `frequent-error` `untested`
 
 `thin-note` = the note was inadequate from the start → recollect.
 `exhausted` = the note was fine and has been used up (4+ attempts) → extend it, do not replace it.

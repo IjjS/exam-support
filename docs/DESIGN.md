@@ -48,7 +48,7 @@ exam-harvest        _inbox/ · _sources/ · web         notes/ · notes/_compare
 
 exam-quiz           _active · sessions (limit=15)     mastery · wrongbook · _resolved
                     mastery · wrongbook · format      sessions · harvest-queue · log/
-                    notes/{5 topics}                  _active (on switch) · _registry (own row)
+                    notes/{5 topics} · web            _active (on switch) · _registry (own row)
                     grading.md (at Phase 4)
                     error-taxonomy (only on a miss)
                     never _spec/source-policy.md
@@ -366,7 +366,7 @@ Keeping the original samples resident is expensive. So **discard the content and
 | | Reuse value | Handling |
 |---|---|---|
 | Content (which service is the answer) | Low — that question won't be asked again | Read once during init, then discarded |
-| Format (type mix, stem length, phrasing, distractor patterns) | High — applies to every question | Compressed into `format.md` (~1k), resident |
+| Format (type mix, stem length, phrasing, distractors, difficulty) | High — applies to every question | Compressed into `format.md`, resident |
 
 ### Anchors are synthesized, not copied
 
@@ -377,6 +377,13 @@ Prose spec alone doesn't fix the tone, so two few-shot anchors are kept. But off
 
 init reads the samples and **writes fresh examples in the same format on different subjects.**
 Anchors are fixed to different domains and different types (one single-select, one multiple-response).
+
+### Difficulty belongs to the exam
+
+init classifies samples by reasoning depth and writes a compact E/M/H rubric plus per-mode ratios to `format.md`.
+quiz owns no global difficulty definition. Multiple-response is a response format, never difficulty evidence; hard
+requires multi-step judgment with competing viable designs and conflicting requirements. Missing difficulty metadata
+is a format migration error, not permission for quiz to invent a fallback.
 
 ### Performance-exam switch
 
@@ -392,8 +399,8 @@ Vendors revise exams (SAP-C02 → C03, curriculum updates). Harvest reads offici
 
 ### Detection
 
-Read only the 8-line DRIFT-CHECK block at the top of `format.md` via `Read(limit=12)` and compare against what the web
-showed. No extra web calls, about 150 tokens.
+Read only the compact DRIFT-CHECK block at the top of `format.md` via `Read(limit=14)` and compare against what the web
+showed. No extra web calls, about 180 tokens.
 
 ### Severity
 
@@ -429,11 +436,9 @@ sequenceDiagram
         H->>U: "SAP-C03 detected — run /exam-init --format"
     end
     U->>I: runs it explicitly
-    I->>F: archive old version, rewrite
+    I->>F: replace format.md
     I->>D: mark entries applied (v4.2)
 ```
-
-On update the previous version is preserved at `_archive/format-{version}-{date}.md`.
 
 ### Version stamp
 
@@ -532,21 +537,22 @@ Two constraints keep it from doing harm:
 Empty `angles:` means no constraint, which is the right behaviour for an exam whose samples showed no
 consistent axis.
 
-## 9. Web fallback limit
-
-Three-tier sourcing for questions:
+## 9. Question source pipeline
 
 ```
-1. Topic note exists  → generate only from the note, cite the note path
-2. No note            → verify against vendor official docs via WebSearch/WebFetch, cite the URL
-3. Web also fails     → Claude's own knowledge, tagged [UNVERIFIED]
+usable note       → generate from the note
+no/exhausted note → Tier C lead → fresh draft → A/B verification
+no Tier C hit     → model draft → A/B verification
+verification fails → [UNVERIFIED]
 ```
 
-**Tier 2 is capped at two questions per session.** Early on, when no notes exist, routing all five through the web
-takes 1-2 minutes to start a session, and on a phone that means it stops getting used.
-A fast first session matters more than note accuracy. Fill the rest with `[UNVERIFIED]` and queue them.
+Tier C supplies only tested combinations, scenario shapes, and traps. It never establishes the answer. Every capability,
+limit, and trade-off that distinguishes an option is confirmed against A or B. Batch searches across topics to limit
+round trips. There is no per-session verification cap; this intentionally trades some early-session latency for accuracy.
 
-Every topic answered via tier 2 or 3 gets appended to `harvest-queue.md`. **The more you quiz, the more notes fill in.**
+Verified questions carry no visible source label and never use `[WEB]`; the cold log records lead, verifier, and date in
+an invisible comment. Failed verification remains `[UNVERIFIED]`. Queue no-note topics with the verifier URL so harvest
+can create the durable note without repeating discovery.
 
 ### What may back a note, versus a question
 
@@ -554,8 +560,8 @@ The two hold to different bars, and the reason is storage.
 
 | | Question | Note |
 |---|---|---|
-| Lifetime | generated fresh, nothing kept | stored, re-read for months |
-| May draw on | **A, B, or C** | **A or B only** |
+| Lifetime | generated fresh; cold archive only | stored, re-read for months |
+| May draw on | C lead, **A/B-verified answer** | **A or B only** |
 
 Tier C — `examtopics.com`, community explanations — is **a lead, never a citation**. It shows what gets tested;
 confirm the claim against an A or B source and cite whatever confirmed it. A `[C]` citation never appears in a note.
