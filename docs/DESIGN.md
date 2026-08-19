@@ -470,6 +470,35 @@ Two separate reasons, and they are often confused:
   that set forever, which is exactly the blind spot this repo exists to prevent. Narrowing to known weaknesses is a
   deliberate act, so the user asks for it.
 
+### Difficulty has no feedback loop — record it
+
+Every other quality signal quiz produces gets written somewhere that can be checked later. Coverage and accuracy
+land in `mastery.md`, the angle lands on the topic row, wrong answers land in the wrongbook with a type. Difficulty
+did not: quiz decided it, wrote it into the log heading, and nothing ever read it back. `mastery.md` has no
+difficulty column, `sessions.md` had none, and no read-only skill referenced it.
+
+That makes difficulty the one field where the model grades its own homework with no later contradiction. The
+failure is not exotic — the ratio in `format.md` is satisfiable at planning time by labelling, while the rubric can
+only be checked after the questions exist. Fill the quota, label to match, skip the second pass, and the session
+reports `E2/M3/H5` while actually being `E5/M3/H2`. Observed 2026-08-19, S4.
+
+So both files now carry it:
+
+```
+sessions.Difficulty   the session's ACTUAL mix, e.g. E2/M3/H5
+wrongbook.Diff        E | M | H for the question behind the entry
+```
+
+`sessions` makes drift visible across sessions. `wrongbook` separates "failing hard questions" from "failing easy
+ones", which call for different responses — the first is normal, the second is a gap.
+
+Store the actual mix, never the target. Recording the target makes the two agree by construction and re-creates the
+blind spot in a column that looks like it fixed it.
+
+**Both are trailing columns, and every later column must be too.** Rows written before the column existed stay
+short and markdown renders the gap as empty, so no migration is needed and no historical row has to be invented.
+Reordering columns instead would mean rewriting every historical row, which is how a state file loses data.
+
 ### Weakness score
 
 ```

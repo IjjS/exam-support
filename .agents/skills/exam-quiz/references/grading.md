@@ -86,19 +86,38 @@ reference it — but that is a decision, not a read, so it forces no order.
 |---|---|
 | `state/log/{YYYY-MM}.md` | **Short delta only** — the question block is already there from Phase 3. Append one result line per question: answer, the user's pick, confidence, `W-id`, per-option verdicts |
 | `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score** / **the angle just used**. Refresh the hot block |
-| `state/wrongbook.md` | Add one line per `miss` / `lucky` / `shaky`, with its origin. Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md`. Refresh the hot block |
-| `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) |
+| `state/wrongbook.md` | Add one line per `miss` / `lucky` / `shaky`, with its origin **and the question's difficulty in the trailing `Diff` column** (`E`/`M`/`H`). Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md`. Refresh the hot block |
+| `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) **and the session's actual difficulty mix in the trailing `Difficulty` column**, e.g. `E2/M3/H5` |
 | `state/harvest-queue.md` | Queue `no-note`, `exhausted`, and `unverified-question` topics with the A/B verifier URL where one exists, plus `unknown` and `thin-note` cases |
 | `exams/_registry.md` | Update this slug's coverage, accuracy, session count |
 
 **Do not modify `blueprint.md`.**
+
+### Recording difficulty
+
+`sessions.Difficulty` is the **actual** mix of the questions asked, not the target from `format.md`. Writing the
+target back is worthless — it makes the two agree by construction and hides exactly the drift the column exists to
+catch. Count the questions as they were written and record that. When the actual mix misses the target, say so in
+the wrap-up rather than silently recording the target.
+
+`wrongbook.Diff` carries the difficulty of the question that produced the entry, so a run of wrong answers can be
+read as "failing hard questions" or "failing easy ones" — two different problems.
+
+Both are **trailing columns**. Rows written before the column existed are left short, and markdown renders the
+missing cell as empty. Never backfill and never reorder columns: any later column must also be appended at the end.
+
+### Appending a row to a table
+
+`sessions.md` and `wrongbook.md` both end with HTML comments **below** the table. Append inside the table, above
+those comments. Appending to the end of the file puts the row outside the table and silently breaks rendering
+from that row down.
 
 ### The log result line — the anchor that makes the log searchable
 
 The question block went in during Phase 3 under `### S12-Q3 — T-034 · …`. The delta closes it:
 
 ```
-**결과**  정답 4 · 내 답 2 ✗ · W-001 · confusion
+**결과**  정답 4 · 내 답 2 ✗ · W-001 · confusion · H
   1 ✗ 리전 간 전이 라우팅 불가
   2 ✗ 동작은 하나 운영부담 큼 — "LEAST operational overhead" 위반
   3 ✗ DX는 구축에 수 주 — "quickly" 위반
@@ -108,6 +127,8 @@ The question block went in during Phase 3 under `### S12-Q3 — T-034 · …`. T
 
 - The `W-id` on the result line is what `exam-desc` greps for. It sits **below** the question, so a lookup reads a
   window that starts above the match
+- The difficulty goes last on the result line. It is already in the question heading; repeating it here means a
+  grep hit on the `W-id` shows it without widening the window
 - Omit the `W-id` for confident-correct answers — nothing to look up later
 - A re-asked entry keeps the **same `W-id`** across months, which is what gives the entry a history
 

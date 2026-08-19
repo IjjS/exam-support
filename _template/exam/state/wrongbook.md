@@ -19,8 +19,9 @@ origin — how the entry got here, and what it takes to leave:
 
 Any `?` or `??` resets the streak to zero.
 
-| ID | Topic ID | origin | Type | First | Repeats | Streak | Unresolved core | Notes |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | | |
+| ID | Topic ID | origin | Type | First | Repeats | Streak | Unresolved core | Notes | Diff |
+|---|---|---|---|---|---|---|---|---|---|
+| | | | | | | | | | |
 
 <!-- Notes: the option weighed against (shaky) / missed requirement keyword / distractor pattern D1-D5 / partial 1/2 -->
+<!-- Diff: E | M | H, the difficulty of the question that produced this entry. Blank on rows written before this column existed. -->
