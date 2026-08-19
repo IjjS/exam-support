@@ -449,17 +449,26 @@ skill from format makes the data uninterpretable.
 
 ## 8. Mode gating
 
-Weakness mode is meaningful only once weaknesses have surfaced. One or two sessions is too small a sample.
+Basic mode is the default forever. Weakness mode is opt-in, never automatic.
 
 ```
 basic_done = (diagnostic + mock) sessions in sessions.md
 
-basic_done < 3   →  run basic mode even when weakness mode is requested, and say so
-                    allow one override if the user asks again
-basic_done >= 3  →  weakness mode by default
+no weakness request                        →  basic mode
+user asked for weakness, basic_done >= 3   →  weakness mode
+user asked for weakness, basic_done < 3    →  run basic mode anyway, and say so
+                                              allow one override if the user asks again
 ```
 
-Basic mode prioritizes ⬜ untested topics, so three rounds surface the blind spots. That is the point of the gate.
+Two separate reasons, and they are often confused:
+
+- **The `< 3` gate** is about sample size. Weakness mode sorts by a score built from attempts; with one or two
+  sessions there is nothing to sort. It only ever applies to a request the user actually made.
+- **Basic staying the default** is about coverage. Basic mode prioritizes ⬜ untested topics, and coverage is the
+  long pole — a 123-topic blueprint needs a dozen-plus sessions before the map is filled in. Flipping to weakness
+  mode automatically at three sessions freezes coverage at whatever ~30 topics happened to come up and then drills
+  that set forever, which is exactly the blind spot this repo exists to prevent. Narrowing to known weaknesses is a
+  deliberate act, so the user asks for it.
 
 ### Weakness score
 

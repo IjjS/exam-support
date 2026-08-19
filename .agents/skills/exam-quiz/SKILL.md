@@ -32,15 +32,21 @@ If `sessions.md` was modified within the last 5 minutes, another session may be 
 
 ## Phase 1 — Mode gating
 
+**Basic (diagnostic) mode is always the default, at every `basic_done`.**
+Weakness mode never turns on by itself — it runs only when the user asks for it.
+
 ```
 basic_done = (diagnostic + mock) from the sessions hot block
 
-basic_done < 3   →  basic (diagnostic) mode, unconditionally
-                    if the user asked for weakness mode:
-                    "약점 파악이 아직 부족합니다 ({n}/3회). 이번엔 기본모드로 갑니다."
-                    allow one override if they ask again
-basic_done >= 3  →  weakness mode (default)
+no weakness request                        →  basic (diagnostic) mode
+user asked for weakness, basic_done >= 3   →  weakness mode
+user asked for weakness, basic_done < 3    →  basic mode, and say so:
+                                              "약점 파악이 아직 부족합니다 ({n}/3회). 이번엔 기본모드로 갑니다."
+                                              allow one override if they ask again
 ```
+
+Weakness requests are phrased as `약점모드` · `약점만` · `틀린 것 위주` · `오답 다시`.
+Anything else — a bare `/exam-quiz`, a count, a domain — is basic mode.
 
 An explicit user instruction wins: domain (`D2`), question count (`10문제`), mock exam.
 
