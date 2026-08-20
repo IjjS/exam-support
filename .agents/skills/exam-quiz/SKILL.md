@@ -225,12 +225,14 @@ One checklist, run over the whole message. Any failure means rewrite before send
 
 ```
 Per question
-  □ Does the stem alone force one answer? For every option you rejected, point at the sentence
-    in the stem that kills it. Rejected on an assumption you never wrote down → the question is void
+  □ For every rejected option, declare which: the stem KILLS it (name the sentence) or the requirement
+    keyword OUTRANKS it (say what it costs more of). Neither → the question is void
+  □ Final sentence matches one of format.md's registered question phrasings
   □ Solvable from the wording alone, without the knowledge?   → failed
   □ Answer unchanged if the requirement keyword changes?      → the requirement is decoration
   □ All distractors plausible to someone who does not know?
-  □ Meets format.md's assigned difficulty after writing? Multiple-response alone does not count
+  □ Meets format.md's assigned difficulty after writing? Multiple-response alone does not count.
+    Every rejection was a kill → M, whatever the constraint count. H needs 2+ options that break nothing
   □ Correct option in the same slot as the previous question?
   □ Stem inside format.md's word range?
   □ A "multiple response" question with only one correct option?
@@ -243,11 +245,15 @@ Whole message
 
 **Nothing preceding the user's answer may narrow the option set.**
 
-The first check is the one that voids questions rather than weakening them, so it runs first. The failure is
-quiet: you build an `H` question by picking competing designs and the constraint that separates them, then write
-the designs into the options and leave the constraint in your head. Every option still looks wrong to you and
-defensible to the candidate. Worse, a requirement keyword left pointing the other way — `MOST cost-effective`
-against a cheaper option you meant to exclude — actively argues for the answer you marked wrong.
+The first check runs first because it voids questions rather than weakening them, and because the level falls
+out of its answer. Two quiet failures it catches:
+
+- The constraint that eliminates an option stays in your head instead of the stem. Every option still looks
+  wrong to you and defensible to the candidate.
+- Every rejected option is *killed* by a stated rule. That reads as rigorous and is in fact the easy shape —
+  careful reading eliminates everything, the requirement keyword has nothing left to rank, and `misread`
+  errors can never surface. Writing an `H` means deliberately leaving two options standing that break nothing
+  and differ only in cost, operational overhead, or recovery speed.
 
 ---
 
