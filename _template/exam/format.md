@@ -22,14 +22,26 @@ command/manifest authoring tasks instead of options.
 
 ## Difficulty
 
+The skeleton below is **fixed text**. `/exam-init` fills only the bracketed nouns, and never rewrites the
+sentences around them. A criterion phrased as a description ("multi-step judgment") is self-certifying — the
+author reads it, agrees with themselves, and nothing can contradict them. Phrased as an instruction to name
+something, a wrong level shows up as a slot that cannot be filled.
+
 ```text
-E: {{DIFFICULTY_EASY}}
-M: {{DIFFICULTY_MEDIUM}}
-H: {{DIFFICULTY_HARD}}
-gate: {{DIFFICULTY_GATE}}
+E: name the one {{DIFF_UNIT_E}} that decides it
+M: name the {{DIFF_UNIT_M}}, and what it rules out
+H: name {{DIFF_COUNT_H}}+ viable {{DIFF_UNIT_H}}, and the {{DIFF_SEPARATOR}} that separates them
 ```
 
-Use `difficulty_mix` for the resolved quiz mode. Option count and multiple-response never determine difficulty by themselves.
+```
+difficulty_basis: {{DIFFICULTY_BASIS}}
+```
+
+- **A slot you cannot fill means the level is wrong. Downgrade.**
+- Option count and multiple-response never raise difficulty by themselves.
+- If naming the service or term alone reveals the answer, downgrade.
+
+Use `difficulty_mix` for the resolved quiz mode.
 
 ## Stem structure
 {{STEM_STRUCTURE}}

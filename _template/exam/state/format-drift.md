@@ -1,6 +1,7 @@
 # {{EXAM_NAME}} format drift log
 
-<!-- harvest appends here. Subagents must not write to this file either — only the main session does. -->
+<!-- harvest appends here, and quiz appends when the user disputes a difficulty call. -->
+<!-- Subagents must not write to this file either — only the main session does. -->
 <!-- format.md itself is updated only through /exam-init --format. -->
 
 Grades: `minor` (non-blocking — record only) | `major` (finish the current batch, then stop)

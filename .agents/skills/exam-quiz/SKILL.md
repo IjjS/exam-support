@@ -195,10 +195,15 @@ invisible log-only comment. Use one exact form:
 ```html
 <!-- source: note path (updated date) -->
 <!-- source: lead [C] URL · verified [A|B] locator (date) -->
+<!-- source: model · no C lead: "<query>" · verified [A|B] locator (date) -->
 <!-- source: model|lead URL · unverified (date) -->
 ```
 
-Use `[UNVERIFIED]` visibly only with the third form. Verdicts and the `W-id` come later as a short delta.
+The third form is the fallback, and it must carry the search that came up empty. **A missing `no C lead:` field
+means the Tier C step was skipped, not that it found nothing** — the two are indistinguishable otherwise, and
+skipping it is what turns exam-shaped questions into documentation-shaped ones.
+
+Use `[UNVERIFIED]` visibly only with the fourth form. Verdicts and the `W-id` come later as a short delta.
 
 ### ⛔ The answer-syntax line must not carry answers
 

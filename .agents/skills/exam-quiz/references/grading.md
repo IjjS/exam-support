@@ -90,6 +90,7 @@ reference it — but that is a decision, not a read, so it forces no order.
 | `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) **and the session's actual difficulty mix in the trailing `Difficulty` column**, e.g. `E2/M3/H5` |
 | `state/harvest-queue.md` | Queue `no-note`, `exhausted`, and `unverified-question` topics with the A/B verifier URL where one exists, plus `unknown` and `thin-note` cases |
 | `exams/_registry.md` | Update this slug's coverage, accuracy, session count |
+| `state/format-drift.md` | **Only when the user disputes a difficulty call this session.** One row, grade `minor`, field `difficulty` |
 
 **Do not modify `blueprint.md`.**
 
@@ -102,6 +103,17 @@ the wrap-up rather than silently recording the target.
 
 `wrongbook.Diff` carries the difficulty of the question that produced the entry, so a run of wrong answers can be
 read as "failing hard questions" or "failing easy ones" — two different problems.
+
+**When the user says a level was wrong** — "이게 무슨 hard야", "이건 easy 아닌데" — they are calibrating the exam's
+criteria, and they are better placed to do it than the sample set was. quiz cannot edit `format.md`, so record the
+correction in `state/format-drift.md` and let `/exam-init --format` apply it:
+
+```
+| S4-Q7 hard로 냈으나 사용자는 easy 판정 | minor | difficulty | H: name 2+ viable … | 서비스명이 답을 드러냄 | 사용자 (2026-08-19) | open |
+```
+
+One row per disputed question, not per session. Do not argue the call and do not re-grade the answer — the score
+stands, only the criteria are in question.
 
 Both are **trailing columns**. Rows written before the column existed are left short, and markdown renders the
 missing cell as empty. Never backfill and never reorder columns: any later column must also be appended at the end.

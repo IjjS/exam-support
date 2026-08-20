@@ -144,11 +144,27 @@ Skipping this means generating plausible-looking questions that don't match the 
      requirement keywords for a scenario-heavy exam, question types otherwise. Fix them explicitly — a free-form
      label drifts (`cost` / `cost-effective` / `비용`) and stops being comparable across sessions.
      Leave it empty rather than guessing if the samples show no consistent axis
-   - **Derive the difficulty profile here too.** Classify the samples by reasoning depth, not option count:
-     `E` direct recall; `M` two concepts or one decisive constraint with competing options; `H` multi-step judgment
-     with at least two viable designs separated by conflicting requirements. Multiple-response alone never raises difficulty.
-     Write compact E/M/H criteria plus per-mode ratios (`diagnostic`, `weakness`, `section`, `mock`) to `format.md`;
-     every ratio must total 100. Mark them `[ESTIMATED]` when fewer than five usable samples exist.
+   - **Derive the difficulty vocabulary here too — from real questions, not from the official sample set.**
+     An official sample set is a showcase: it demonstrates each question type once and is deliberately balanced,
+     so its difficulty spread is the sample's, not the exam's. Calibrate against volume instead, in this order:
+
+     ```
+     1. _sources/ past papers the user supplied
+     2. Tier C past-question sites — already permitted above for format analysis, and this is where real
+        difficulty lives. Read tens of questions, not a handful
+     3. Official samples — enough to confirm a shape, not to set a distribution
+     ```
+
+     Work the sources until something separates the hard questions from the easy ones. Search, fetch, and read
+     around a site that will not extract cleanly; do not stop at the first failed fetch and do not ask the user
+     to supply the criteria.
+
+     Then **fill the nouns in `format.md`'s fixed Difficulty skeleton** — the unit a question turns on, and what
+     separates competing answers. Never rewrite the skeleton sentences. Record where the calibration came from in
+     `difficulty_basis` (`examtopics n=40 (date)` / `_sources/… n=120` / `[ESTIMATED]`).
+
+     Also write per-mode ratios (`diagnostic`, `weakness`, `section`, `mock`); every ratio must total 100.
+     Mark ratios `[ESTIMATED]` when fewer than five usable samples exist — but register the exam either way.
 3. **Synthesize two anchors** — never copy originals. Same format, different subject. Different domains, one single-select and one multiple-response
 4. Fill the compact DRIFT-CHECK block at the top (harvest reads it with a bounded read)
 
