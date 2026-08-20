@@ -160,7 +160,10 @@ Skipping this means generating plausible-looking questions that don't match the 
      to supply the criteria.
 
      Then **fill the nouns in `format.md`'s fixed Difficulty skeleton** — the unit a question turns on, and what
-     separates competing answers. Never rewrite the skeleton sentences. Record where the calibration came from in
+     separates competing answers. Never rewrite the skeleton sentences: a criterion phrased as a description
+     ("multi-step judgment") is self-certifying, since the author reads it, agrees with themselves, and nothing
+     can contradict them. Phrased as an instruction to name something, a wrong level shows up as a slot that
+     cannot be filled. Keep that reasoning here — `format.md` carries the result, not the method. Record where the calibration came from in
      `difficulty_basis` (`examtopics n=40 (date)` / `_sources/… n=120` / `[ESTIMATED]`).
 
      Also write per-mode ratios (`diagnostic`, `weakness`, `section`, `mock`); every ratio must total 100.

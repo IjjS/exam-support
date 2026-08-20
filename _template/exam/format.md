@@ -22,11 +22,6 @@ command/manifest authoring tasks instead of options.
 
 ## Difficulty
 
-The skeleton below is **fixed text**. `/exam-init` fills only the bracketed nouns, and never rewrites the
-sentences around them. A criterion phrased as a description ("multi-step judgment") is self-certifying — the
-author reads it, agrees with themselves, and nothing can contradict them. Phrased as an instruction to name
-something, a wrong level shows up as a slot that cannot be filled.
-
 ```text
 E: name the one {{DIFF_UNIT_E}} that decides it
 M: name the {{DIFF_UNIT_M}}, and what it rules out
