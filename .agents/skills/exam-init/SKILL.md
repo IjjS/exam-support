@@ -159,8 +159,10 @@ Skipping this means generating plausible-looking questions that don't match the 
      around a site that will not extract cleanly; do not stop at the first failed fetch and do not ask the user
      to supply the criteria.
 
-     Then **fill the nouns in `format.md`'s fixed Difficulty skeleton** — the unit a question turns on, and what
-     separates competing answers. Never rewrite the skeleton sentences: a criterion phrased as a description
+     Then **fill the nouns in `format.md`'s fixed Difficulty skeleton** — the unit a question turns on, what
+     separates competing answers, and the `floor`. The floor is the easiest thing this exam actually asks:
+     read the simplest real questions you found, not the official sample's, and write what even those carry.
+     Skip it and every level slides toward the tier below. Never rewrite the skeleton sentences: a criterion phrased as a description
      ("multi-step judgment") is self-certifying, since the author reads it, agrees with themselves, and nothing
      can contradict them. Phrased as an instruction to name something, a wrong level shows up as a slot that
      cannot be filled. Keep that reasoning here — `format.md` carries the result, not the method. Record where the calibration came from in

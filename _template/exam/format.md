@@ -23,9 +23,11 @@ command/manifest authoring tasks instead of options.
 ## Difficulty
 
 ```text
-E: name the one {{DIFF_UNIT_E}} that decides it
-M: name the {{DIFF_UNIT_M}}, and what it rules out
-H: name {{DIFF_COUNT_H}}+ viable {{DIFF_UNIT_H}}, and the {{DIFF_SEPARATOR}} that separates them
+E: name the one {{DIFF_UNIT_E}} that settles it
+M: name the {{DIFF_COUNT_M}} {{DIFF_UNIT_M}} in play, and the one that eliminates the otherwise-best answer
+H: name {{DIFF_COUNT_H}}+ viable {{DIFF_UNIT_H}}, and the {{DIFF_SEPARATOR}} they cannot both satisfy
+
+floor: {{DIFF_FLOOR}}
 ```
 
 ```
@@ -33,6 +35,9 @@ difficulty_basis: {{DIFFICULTY_BASIS}}
 ```
 
 - **A slot you cannot fill means the level is wrong. Downgrade.**
+- **`floor` is what holds `E` at this exam's level.** Without it, `E` drifts down to the tier below —
+  "one behavior decides it" is equally true of an entry-level exam. State what every stem carries no
+  matter how easy, and what is off-exam entirely.
 - Option count and multiple-response never raise difficulty by themselves.
 - If naming the service or term alone reveals the answer, downgrade.
 
