@@ -225,6 +225,8 @@ One checklist, run over the whole message. Any failure means rewrite before send
 
 ```
 Per question
+  □ Does the stem alone force one answer? For every option you rejected, point at the sentence
+    in the stem that kills it. Rejected on an assumption you never wrote down → the question is void
   □ Solvable from the wording alone, without the knowledge?   → failed
   □ Answer unchanged if the requirement keyword changes?      → the requirement is decoration
   □ All distractors plausible to someone who does not know?
@@ -240,6 +242,12 @@ Whole message
 ```
 
 **Nothing preceding the user's answer may narrow the option set.**
+
+The first check is the one that voids questions rather than weakening them, so it runs first. The failure is
+quiet: you build an `H` question by picking competing designs and the constraint that separates them, then write
+the designs into the options and leave the constraint in your head. Every option still looks wrong to you and
+defensible to the candidate. Worse, a requirement keyword left pointing the other way — `MOST cost-effective`
+against a cheaper option you meant to exclude — actively argues for the answer you marked wrong.
 
 ---
 
