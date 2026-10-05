@@ -85,7 +85,7 @@ reference it — but that is a decision, not a read, so it forces no order.
 | File | Update |
 |---|---|
 | `state/log/{YYYY-MM}.md` | **Short delta only** — the question block is already there from Phase 3. Append one result line per question: answer, the user's pick, confidence, `W-id`, per-option verdicts |
-| `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score** / **the angle just used**. Refresh the hot block |
+| `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score** / **the angle just used** — **rewrite the whole row**, see below. Refresh the hot block |
 | `state/wrongbook.md` | Add one line per `miss` / `lucky` / `shaky`, with its origin **and the question's difficulty in the trailing `Diff` column** (`E`/`M`/`H`). Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md`. Refresh the hot block |
 | `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) **and the session's actual difficulty mix in the trailing `Difficulty` column**, e.g. `E2/M3/H5` |
 | `state/harvest-queue.md` | Queue `no-note`, `exhausted`, and `unverified-question` topics with the A/B verifier URL where one exists, plus `unknown` and `thin-note` cases |
@@ -93,6 +93,41 @@ reference it — but that is a decision, not a read, so it forces no order.
 | `state/format-drift.md` | **Only when the user disputes a difficulty call this session.** One row, grade `minor`, field `difficulty` |
 
 **Do not modify `blueprint.md`.**
+
+### Writing a mastery row — whole line, never a span
+
+Replace the entire line: the old string runs from `| T-041 |` through the row's final `|`, and the new string is
+the complete row, one cell per header column, ending in ` |`.
+
+```
+| T-041 | {topic} | D2 | 3 | 2 | 0 | 1 | 🟨 | 2026-10-02 | 1.53 | ops |
+```
+
+Never edit a span inside a row (`| 1 | 0 |` → `| 2 | 1 |`). The same short span matches in many rows, and a span
+that starts or ends one cell off leaves the old attempt count behind and drops the trailing pipe. Every column to
+its right then shifts, and status and score are read from the wrong cells from the next session on.
+Observed S20 and S21 (2026-10-02) — every row written in those sessions came out with an extra cell.
+
+After the writes, check the touched rows — each must end in `|` and match the header's cell count:
+
+```bash
+awk -F'|' '/^\| ID /{n=NF} /^\| T-(041|005) /{print $2, (NF==n && /\|$/ ? "ok" : "BAD")}' exams/{slug}/state/mastery.md
+```
+
+Repair a `BAD` row before the wrap-up rather than leaving it for the next session to misread.
+
+### Mixed questions — record on every topic
+
+A question whose heading lists several topics (`T-041,T-005`) is recorded **on each of them, in full**:
+
+- `mastery.md` — each topic's row gets the attempt and the same verdict (correct / lucky / shaky / wrong)
+- `wrongbook.md` — one row **per topic**, each with its own `W-id`, the same origin, type, and `Diff`. Each retires
+  on its own streak, so a topic that keeps failing in combination stays in the book after its partner clears
+- The log result line carries every `W-id`: `W-082,W-083`
+
+A solved question is not the same thing as topic coverage, so per-topic counts may sum past the question count.
+The question-level figures — the mastery hot block's surface/real accuracy, `sessions.md`, `_registry.md` —
+still count each question once.
 
 ### Recording difficulty
 
