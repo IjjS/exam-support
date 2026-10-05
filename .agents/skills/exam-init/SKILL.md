@@ -161,6 +161,12 @@ Skipping this means generating plausible-looking questions that don't match the 
 
      Then write the three E/M/H lines in `format.md`. **Sort the real questions you found from easiest to
      hardest and read off what actually changes between them** — it is rarely the number of requirements.
+     Evaluate reasoning depth as if the candidate has already been given every subject fact the item needs.
+     Track unfamiliarity as recall load, never as evidence for a higher level. Count only inferences the solver
+     must derive; decisions already stated together inside the correct option do not count.
+     **Everything level-specific goes in `format.md`, never in a skill**: the lines, the tests that confirm each
+     level, and the conditions that void an item. quiz runs exactly what `format.md` lists — a rule written into
+     quiz instead would apply to every other exam.
      Each line must be an instruction to name something countable, never a description of the finished
      question: a description is self-certifying, while a naming instruction fails visibly when the level
      is wrong. Never rewrite the skeleton sentences: a criterion phrased as a description
@@ -171,7 +177,24 @@ Skipping this means generating plausible-looking questions that don't match the 
 
      Also write per-mode ratios (`diagnostic`, `weakness`, `section`, `mock`); every ratio must total 100.
      Mark ratios `[ESTIMATED]` when fewer than five usable samples exist — but register the exam either way.
-3. **Synthesize two anchors** — never copy originals. Same format, different subject. Different domains, one single-select and one multiple-response
+   - **Measure topic mixing on the same real questions.** For each one, count the blueprint topics whose knowledge
+     is load-bearing — a topic counts only if some option is killed or the chain advances on that topic's facts,
+     not because its service is merely named. Write the result as a `## Topic mixing` section in `format.md`:
+
+     ```
+     topic_mix: 45% (2 topics 40% · 3+ 5%)
+     topic_mix_basis: examtopics n=505 (2026-09-27)
+     ```
+
+     This is a property of the exam, not of the tooling: scenario exams routinely make one question turn on two
+     services' interaction, while a recall-style exam may be 0%. Write `topic_mix: 0%` when it genuinely is —
+     never omit the section, since quiz treats a missing one as single-topic. It is measured independently of
+     difficulty: two topics side by side is breadth, and only raises the level when one topic's result feeds
+     the other's inference.
+3. **Synthesize two anchors** — never copy originals. Same format, different subject. Different domains, one
+   single-select and one multiple-response. Draft the higher-level anchor's trace first, then confirm every slot
+   of its line fills and every test `format.md` lists for that level passes. Reject an anchor when the correct
+   option paraphrases the whole trace or the correct answer positions form a visible family.
 4. Fill the compact DRIFT-CHECK block at the top (harvest reads it with a bounded read)
 
 If no samples can be found, draft from the typical format of that vendor and family and mark **every field `[ESTIMATED]`**.
