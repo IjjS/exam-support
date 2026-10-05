@@ -59,8 +59,10 @@ An explicit user instruction wins: domain (`D2`), question count (`10문제`), m
 
 Default is **5 questions**. Announce the resolved mode in one line before starting.
 
-Take both the difficulty rubric and the resolved mode's ratio from `format.md`. Scale the ratio by largest remainder.
-If either is missing, stop with `/exam-init --format`; never invent a cross-exam fallback.
+Take both the difficulty rubric and the resolved mode's target ratio from `format.md`. `더 어렵게` uses the
+exam's `harder` ratio without changing topic-selection mode. Scale by largest remainder. If the required rubric
+or ratio is missing, stop with `/exam-init --format`; never invent a cross-exam fallback. The ratio is a drafting
+target only — actual labels are assigned after the completed options pass the rubric.
 
 ## Phase 2 — Topic selection
 
@@ -88,6 +90,34 @@ which the old rule would have wrongly held to 3.
 list instead: no two questions from adjacent topic IDs, since neighbouring IDs came from the same part of the
 source material.
 
+### Build the level's trace before choosing a topic
+
+When the target level's line in `format.md` asks for dependent steps, draft those steps first in subject-neutral
+terms — what the candidate must derive, in order — and only then choose a topic and map subject facts onto it.
+An action already stated inside the correct option is not a step the candidate derives.
+
+**Topic priority wins over the level mix.** Select topics first, then pair levels. A selected topic is never
+swapped out because it cannot carry a level on its own — it is in the session because it is weak. When its facts
+alone stop short of the target level, **extend the chain into another topic**: pair it with a secondary whose
+facts supply the missing dependent link, so one topic's result feeds the other's inference. That is how a narrow
+topic reaches `M` or `H`, and it counts toward the session's mixed share. If no pairing yields an honest chain,
+keep the lower level. Never force a topic upward.
+
+### Topic mixing — follow the exam's rate
+
+If `format.md` has a `topic_mix:` line, write that share of the session as **mixed questions** (largest remainder,
+like every other ratio). A missing section, or `0%`, means every question stays on one topic.
+
+- A mixed question has one **primary** topic (the slot it was selected for) and one or more **secondary** topics.
+  Take secondaries from the session's other selected topics first — their notes are already open, so the mix
+  costs no extra read. Reach outside the session only when no selected pair interacts, and then read at most
+  one extra note per session
+- Every listed topic must be load-bearing: some option dies, or the chain advances, on that topic's facts.
+  A service that is merely named in the stem is scenery, not a topic of the question
+- Mixing raises the level only through dependence. Two topics side by side are breadth; one topic's result
+  feeding the other's inference is depth — and the usual way to lift a topic past its own ceiling
+- A topic used as a secondary still counts once toward the section spread, under its own section
+
 ### Angle — probe a recurring topic from a different side
 
 `mastery.Angle` holds the single code last used for that topic, drawn from the `angles:` list in `format.md`.
@@ -102,7 +132,9 @@ only to break ties. Never distort the mix to chase a fresh angle.
 
 If `format.md` has no `angles:` list, skip this entirely — there is no axis to vary along.
 
-- Re-asking active wrong answers is capped at **40% of the questions**; the rest are new topics
+- While coverage (mastery hot block) is **80% or below**, re-asking active wrong answers is capped at **40% of the
+  questions** and the rest are new topics — there is still unexplored ground to find blind spots in. Above 80%
+  the cap is off: select purely by score, even if every question re-probes an active entry
 - When re-asking, **never reuse the same question** — probe the same knowledge from a different angle
 - Skip `deprecated` topics
 
@@ -111,6 +143,10 @@ If `format.md` has no `angles:` list, skip this entirely — there is no axis to
 The generation rules are at the bottom of this file, under **Question generation rules**. Follow them.
 
 Follow `format.md` for the single/multiple-response mix, stem length, phrasing, and distractor patterns.
+
+Keep the drafted trace intact while writing the stem and options. Add subject facts only after the trace exists,
+then verify them through the source pipeline. Do not start from one rare fact and build requirements around it;
+`format.md` decides what level that yields.
 
 ### Source pipeline
 
@@ -147,7 +183,8 @@ costs a repeated question on the topic the user is worst at.
 This bites hardest in weakness mode, where a stubborn topic returns every second or third session. That topic
 is also the one most in need of varied probing, so leaving it on a spent note is the worst place to economize.
 
-**Manual override.** `"웹도 써서"`, `"새로운 각도로"`, `"더 어렵게"` forces this pipeline even when a note is usable.
+**Manual override.** `"웹도 써서"` and `"새로운 각도로"` force this pipeline even when a note is usable.
+`"더 어렵게"` both selects the `harder` ratio and forces this pipeline.
 
 Tier C is a **lead only**: extract the tested service combination, scenario shape, and distractor traps. Never copy its
 wording or trust its answer. Verify the correct answer and every capability, limit, or trade-off that distinguishes an
@@ -187,7 +224,11 @@ Heading carries a session-question ref, since no wrongbook ID exists yet:
 
 ```
 ### S12-Q3 — T-034 · D2 · Database replication · hard · single · [UNVERIFIED]
+### S12-Q4 — T-041,T-005 · D2,D1 · Route 53 failover, hybrid DNS · medium · single
 ```
+
+A mixed question lists every topic, primary first, comma-separated with no spaces (`T-041,T-005`); domains and
+names follow the same order.
 
 Omit any source label for note-backed or A/B-verified questions; never emit `[WEB]`. After the options, record an
 invisible log-only comment. Use one exact form:
@@ -225,14 +266,16 @@ One checklist, run over the whole message. Any failure means rewrite before send
 
 ```
 Per question
-  □ For every rejected option, declare which: the stem KILLS it (name the sentence) or the requirement
-    keyword OUTRANKS it (say what it costs more of). Neither → the question is void
+  □ For every rejected option, declare which: the stem KILLS it (name the sentence) or the ranking criterion
+    OUTRANKS it (say what it loses on). Neither → the question is void
   □ Final sentence matches one of format.md's registered question phrasings
   □ Solvable from the wording alone, without the knowledge?   → failed
-  □ Answer unchanged if the requirement keyword changes?      → the requirement is decoration
+  □ Any void condition listed in format.md met?               → discard and regenerate
   □ All distractors plausible to someone who does not know?
-  □ Meets format.md's assigned difficulty after writing? Multiple-response alone does not count.
-    Every rejection was a kill → M, whatever the constraint count. H needs 2+ options that break nothing
+  □ Correct option is the only one that paraphrases every requirement? → failed; regenerate
+  □ Do the correct options form a visible family by position, wording, or grouping? → failed
+  □ Classify difficulty now, after all options exist: fill every named slot of format.md's line for the level
+    and run every test format.md lists for it. Any empty or merely listed slot → downgrade or regenerate
   □ Correct option in the same slot as the previous question?
   □ Stem inside format.md's word range?
   □ A "multiple response" question with only one correct option?
@@ -245,15 +288,11 @@ Whole message
 
 **Nothing preceding the user's answer may narrow the option set.**
 
-The first check runs first because it voids questions rather than weakening them, and because the level falls
-out of its answer. Two quiet failures it catches:
-
-- The constraint that eliminates an option stays in your head instead of the stem. Every option still looks
-  wrong to you and defensible to the candidate.
-- Every rejected option is *killed* by a stated rule. That reads as rigorous and is in fact the easy shape —
-  careful reading eliminates everything, the requirement keyword has nothing left to rank, and `misread`
-  errors can never surface. Writing an `H` means deliberately leaving two options standing that break nothing
-  and differ only in cost, operational overhead, or recovery speed.
+Fill the trace privately, never in the message. A list of facts, a requirement checklist, or prose copied from
+the correct option cannot fill a slot. If a draft lands below its target, keep the honest lower label. Try the higher
+level at most twice on one topic — including the attempt to chain it into a secondary — then keep the topic at the
+level it reached and hand that slot to another selected topic that can carry it. The post-audit mix may fall short
+of the target only by slots no selected topic, alone or chained, could carry; announce the actual mix in the mode line (`M3/H2`), never which question holds which level.
 
 ---
 
@@ -278,6 +317,8 @@ Required:
 - **Randomize the correct position.** Never the same slot five questions in a row
 - Every distractor must look plausible to someone without the knowledge
 - Consistent option formatting, tense, and sentence structure
+- For multiple-response items, randomize answer-set structure too. Correct options must not share an obvious
+  pattern — position, numbering, wording, or a category grouping — that the distractors lack
 
 ---
 
@@ -297,7 +338,7 @@ Mix types within a session.
 
 | Type | What it probes |
 |---|---|
-| Scenario selection | The configuration that satisfies the requirements (**primary — most of SAP**) |
+| Scenario selection | The configuration that satisfies the requirements (primary on scenario-based exams) |
 | Comparative | Which of several similar services fits this situation |
 | Behavior prediction | What happens under this configuration |
 | Diagnosis | What causes this symptom |
@@ -307,16 +348,9 @@ Mix types within a session.
 
 ## Requirement keywords
 
-Include **at least one per question** from the list registered in `format.md`, spread evenly across the session.
-
-```
-MOST cost-effective        LEAST operational overhead
-MOST secure                MOST resilient / highly available
-LEAST amount of downtime   MOST scalable
-```
-
-The point: **changing the keyword must change the answer.** Otherwise `misread` errors never surface.
-A question whose answer is the cost-optimal option must include a "faster but pricier" distractor.
+If `format.md` registers requirement keywords, use them at the frequency it reports and apply its rule for when a
+keyword must be load-bearing. Where a keyword does rank the survivors, include a distractor that wins on the
+dimension the keyword ignores, so `misread` errors can surface. If `format.md` registers none, skip this.
 
 ### Record which angle you used
 
