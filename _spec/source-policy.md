@@ -105,15 +105,6 @@ distractor traps, but never for truth.
 Verified questions show no source label; failed verification stays `[UNVERIFIED]`. Questions are archived in the
 cold log but never reused as a knowledge source.
 
-### Why examtopics is C and not B
-
-`comcbt` earned Tier B for its questions and answer keys because they transcribe published Korean past papers and the
-citation (`2024년 3회 78번`) points at a real, identifiable exam sitting.
-
-`examtopics` is different on both counts: the questions are unauthorized reproductions rather than published past
-papers, and the "answer" is a community vote that is frequently contested in the discussion thread right below it.
-A voted answer is not an answer key. **Use it to see what a question looks like, never to learn what is true.**
-
 ### The general rule
 
 The split is by **artifact, not by site.** A single page can be Tier B for one part and Tier C for another —
