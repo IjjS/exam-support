@@ -30,6 +30,7 @@ exams/{slug}/state/wrongbook.md       Read(limit=10)  ← hot block: origins, ty
 exams/{slug}/state/harvest-queue.md   Read(limit=8)
 exams/{slug}/exam.md                  D-day, passing score
 exams/{slug}/format.md                Read(limit=14)  ← for verified_at
+exams/{slug}/_sources/questions/index.jsonl   line count only (wc -l), if a bank exists
 ```
 
 Never reads `blueprint.md`, `state/log/`, `_resolved.md`, or the wrongbook table. For the weakness top-3 detail
@@ -57,6 +58,7 @@ AWS SAP-C02   D-42   세션 12회 (진단 3 · 약점 9)
 오답노트  15건 = 오답 7 · 찍맞 3 · 애매 5
 오답유형  개념혼동 7 · 문제해석 5 · 지식부재 3
 놓친키워드  LEAST operational overhead 4회
+기출       Q210까지 · 남은 319문항
 
 → /exam-quiz D4     (백지 도메인 진단)
    /exam-harvest 3  (큐 7개)
@@ -69,6 +71,8 @@ AWS SAP-C02   D-42   세션 12회 (진단 3 · 약점 9)
 - Sort the weakness top 3 by the score column in `mastery.md` (do not recompute)
 - **Break the wrongbook down by origin** — `오답`, `찍맞`, `애매` need different responses.
   A book that is mostly `애매` means comparison tables; mostly `오답` means notes
+- With a past-question bank, one line for source-mode progress: the `source_next:` cursor from the sessions hot
+  block, and how many questions remain. Without a bank, omit the line
 - The last two lines are **runnable commands**, not advice — something the user can copy and type
 
 ## Warning conditions

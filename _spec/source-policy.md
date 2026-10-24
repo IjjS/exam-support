@@ -1,6 +1,6 @@
 # Source policy
 
-The policy of record for what may back a claim. Referenced by `exam-init` (Phase 4), `exam-comp`, and `exam-desc`.
+The policy of record for what may back a claim. Referenced by `exam-init` (Phases 2 and 5), `exam-comp`, and `exam-desc`.
 
 **Collecting subagents do not read this file** — they get the operational subset in
 `exam-harvest/references/harvest-policy.md`. `exam-quiz` never reads it either; its inline rule is enough.

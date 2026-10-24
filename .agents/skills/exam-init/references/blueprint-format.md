@@ -1,6 +1,6 @@
 # Blueprint authoring rules
 
-Referenced by `exam-init` Phase 3, `--refine`, and migrations.
+Referenced by `exam-init` Phase 4, `--refine`, and migrations.
 
 ---
 
@@ -103,6 +103,9 @@ Reinforce the blueprint while preserving existing topics.
 
 1. Read the current topic list
 2. Compare against the Exam Guide to find missing areas
-3. **Only new topics get new IDs.** Renaming an existing topic is fine; the ID stays
-4. Create ⬜ mastery rows for added topics and update the coverage denominator
-5. Report the change summary: `+8 new / 2 renamed / 1 deprecated`
+3. With a bank, re-map the questions (init Phase 4) — questions that fit no topic and overcrowded topics are
+   the strongest evidence of a gap
+4. **Only new topics get new IDs.** Renaming an existing topic is fine; the ID stays
+5. Create ⬜ mastery rows for added topics and update the coverage denominator, and write the new mapping into
+   `_sources/questions/index.jsonl`
+6. Report the change summary: `+8 new / 2 renamed / 1 deprecated · 기출 매핑 98%`

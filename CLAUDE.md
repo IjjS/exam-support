@@ -28,12 +28,12 @@ Designed to be driven from a phone via remote control of this Mac. **Short outpu
 
 | User says | Skill |
 |---|---|
-| 문제 내줘 / 퀴즈 / 모의고사 / 시험 | `exam-quiz` |
+| 문제 내줘 / 퀴즈 / 모의고사 / 기출 풀래 / 소스모드 | `exam-quiz` |
 | 지금 상태 / 뭐부터 / 커버리지 / D-day | `exam-status` |
 | 노트 만들어 / 자료 수집 / 큐 처리 | `exam-harvest` |
 | A vs B / 차이 / 뭘 골라야 / 비교 / 뭐랑 헷갈리지 | `exam-comp` |
 | ~가 뭐야 / 설명해줘 / 이 도메인 뭐야 / 그때 문제 | `exam-desc` |
-| 새 자격증 / 등록 / 형식 갱신 | `exam-init` |
+| 새 자격증 / 등록 / 기출 추가 / 형식 갱신 | `exam-init` |
 | 초기화 / 리셋 / 처음부터 | `exam-reset` |
 | 스킬 뭐 있어 / 명령어 / 도움말 / 뭐 할 수 있어 | `exam-skills` |
 
@@ -43,9 +43,8 @@ Designed to be driven from a phone via remote control of this Mac. **Short outpu
 
 ```
 _spec/               Specs shared by more than one skill — source-policy, error-taxonomy,
-                     file-reading, pdftext.swift. A skill's own rules stay in its references/.
-_inbox/              User-supplied source files (URL·PDF·MD·TXT·DOCX·XLSX·PPTX·image; no HWP).
-                     init and harvest pick them up, then move them to _sources/.
+                     file-reading, pdftext.swift, wrongbook.sh. A skill's own rules stay in its references/.
+_inbox/              User-supplied files (no HWP) — past questions first. init and harvest move them to _sources/.
                      Material handed over in conversation is saved to _sources/ before use, or it is lost.
 exams/_active.md     The exam currently being studied (every skill reads this first).
                      quiz and harvest rewrite it when the user names a different exam; status and desc never do.
@@ -54,7 +53,7 @@ exams/{slug}/
   exam.md            Exam metadata
   format.md          Question format spec + anchors. DRIFT-CHECK block at top
   blueprint.md       structure (weighted|counted|flat), sections, weights, topics (immutable)
-  _sources/          Processed user-supplied files (originals kept)
+  _sources/          Processed user-supplied files (originals kept); questions/ = past-question bank + index.jsonl
   notes/             {section}/{topic}.md — or {topic}.md when structure: flat. _compare/, _facts.md
   state/
     mastery.md       Per-topic proficiency (includes coverage)

@@ -1,11 +1,15 @@
 ---
 name: exam-init
-description: Register a new certification and build its study map. Use when the user says "AWS SAP 준비 시작", "새 자격증 추가", "쿠버네티스 시험 등록", "CKA 시작하자", or "exam-init". Pulls domains, weights, and topics from the official Exam Guide, analyzes official sample questions into a question-format spec (format.md), and scaffolds the whole exams/{slug}/ tree. --format refreshes only the format spec; --refine only refines the blueprint.
+description: Register a new certification and build its study map. Use when the user says "AWS SAP 준비 시작", "새 자격증 추가", "쿠버네티스 시험 등록", "CKA 시작하자", "기출 추가", or "exam-init". Asks for past questions first, turns them into a question bank, pulls sections, weights, and topics from the official guide, validates the topics against the past questions, calibrates the question format and difficulty (format.md) on them, and scaffolds the whole exams/{slug}/ tree. --bank adds past questions later; --format refreshes only the format spec; --refine only refines the topics.
 ---
 
 # exam-init
 
-Runs once per certification. **It builds the skeleton only** — concept notes belong to `exam-harvest`, questions to `exam-quiz`.
+Registers a certification. **It builds the skeleton only** — concept notes belong to `exam-harvest`, questions to `exam-quiz`.
+
+**Past questions are the best input this skill can get.** They decide the topics, the difficulty, and the question
+format, and they become the bank that `exam-quiz` source mode works through. Everything below works without them,
+but every step is more accurate with them.
 
 **Talk to the user in their own language.**
 
@@ -13,68 +17,122 @@ Runs once per certification. **It builds the skeleton only** — concept notes b
 
 | Call | Behavior |
 |---|---|
-| `/exam-init {exam name}` | New registration (Phases 1-6) |
-| `/exam-init --format` | Re-run Phase 4 only (refresh the format spec) |
-| `/exam-init --refine` | Re-run Phase 3 only (refine topics) |
+| `/exam-init {exam name}` | New registration (Phases 0-7) |
+| `/exam-init --bank` | Add past questions to an existing exam: Phase 2, then mapping (Phase 4) and levels (Phase 5) for the new ones only |
+| `/exam-init --format` | Re-run Phase 5 only (refresh the format spec) |
+| `/exam-init --refine` | Re-run Phase 4 only (refine topics, re-map the bank) |
 
 ---
 
-## Phase 0 — User-supplied sources come first
+## Phase 0 — Sources first, and ask once if there are none
 
-Before searching the web, check `_inbox/` and `exams/{slug}/_sources/`.
-This applies to **every exam**, vendor or not — the user's own material always outranks a search result.
+Check `_inbox/` (and `exams/{slug}/_sources/` on a re-run). Match files to this exam by filename; ask if one is
+ambiguous. Accepted: URL, PDF, MD, TXT, DOCX, XLSX, PPTX, images (PNG/JPG).
 
-- Match files to this exam by filename; ask if a file is ambiguous
-- Accepted: URL, PDF, MD, TXT, DOCX, XLSX, PPTX, images (PNG/JPG)
-- **Before opening any local file, read `_spec/file-reading.md`.** In particular, never open a PDF with the
-  Read tool first — it renders pages as images and costs 10-50x. Extract text with
-  `swift _spec/pdftext.swift <file.pdf>` (macOS, no install) and read that
-- **HWP cannot be read.** Ask the user to export it as PDF from 한글 — automatic conversion mangles the tables
-  that carry the entire structure
-- **A file you could not read must never become a citation.** If extraction fails, say so and ask how to proceed;
-  do not fall back to the web while recording the file as the source
-- After processing, move files to `exams/{slug}/_sources/` (never delete the originals)
+**If nothing is there, ask before going further** — one message, numbered, answerable in one word:
 
-### Material handed over in the conversation
+```
+_inbox/에 자료가 없습니다. 기출문제가 있으면 토픽·난이도·형식이 실제 시험에 맞춰지고, 소스모드로 기출을 순서대로 풀 수 있습니다.
 
-If the user attaches or pastes something substantial (a criteria document, a chunk of a textbook, a photographed page),
-**save it to `exams/{slug}/_sources/` before using it.** Otherwise it disappears with the session and
-`--format` or `--refine` re-runs lose their basis.
+① _inbox/에 넣고 다시 부를게요    ② 웹에서 기출을 찾아 수집해 주세요    ③ 공식 가이드만으로 진행
+```
 
-- Give it a descriptive filename: `_sources/{topic-or-doctype}-{YYYY-MM-DD}.{ext}`
-- Attached files: copy them in. Pasted text: write it to a `.md`
-- Skip this for a few lines of throwaway text; anything worth citing gets saved
-- Say in one line what was saved where
+For a domestic exam, name the 출제기준 PDF in the same message — the web alone rarely carries it.
 
-If the exam is a domestic (non-vendor) certification, expect the web alone to be insufficient and say so early:
-`"출제기준 PDF가 있으면 _inbox/ 에 넣어주세요. 없으면 웹으로 진행하되 정확도가 떨어집니다."`
+- `①` stop here; the user re-runs `/exam-init` after adding files
+- `②` continue, and build the bank from the web in Phase 2
+- `③` continue without a bank. Never ask again in this run — the question exists to inform, not to block
 
-## Phase 1 — Identify the exam
+**Reading files**: read `_spec/file-reading.md` before opening any local file. Never open a PDF with the Read tool
+first — it renders pages as images and costs 10-50x; extract text with `swift _spec/pdftext.swift <file.pdf>`.
+**HWP cannot be read** — ask for a PDF export from 한글. **A file you could not read is never cited**; say so and ask
+how to proceed.
+
+**Material handed over in the conversation** — a criteria document, a chunk of a textbook, a photographed page — is
+saved to `exams/{slug}/_sources/{topic-or-doctype}-{YYYY-MM-DD}.{ext}` before it is used. Otherwise `--format` and
+`--refine` re-runs lose their basis. Say in one line what was saved where.
+
+## Phase 1 — Identify the exam and create the tree
 
 Pin down the exact exam code from the name. **Ask** if it is ambiguous (e.g. "AWS SAP" → confirm SAP-C02).
-
-Search vendor official pages via WebSearch and collect:
+Search official pages and collect:
 
 | Field | Example |
 |---|---|
 | Exam code | SAP-C02 |
 | Questions / duration / passing score | 75 / 180 min / 750 of 1000 |
 | Exam languages | English, Japanese, Korean … |
-| Exam Guide URL | |
-| Sample question URL | |
+| Exam Guide URL · sample question URL | |
 
 Ask for the exam date (optional). It drives the D-day.
 
-## Phase 2 — Discover the exam's own structure
+Then create the tree, so the bank and sources have somewhere to go. `exams/` is gitignored, so bootstrap the shared
+files from the template if they are missing — never hand-write them:
 
-**Do not assume the exam has domains.** Find out how it is actually organized and record that.
-Deciding the structure is the whole reason this phase exists — every later skill reads it rather than guessing.
+```bash
+mkdir -p exams
+[ -f exams/_active.md ]   || cp _template/exams/_active.md   exams/
+[ -f exams/_registry.md ] || cp _template/exams/_registry.md exams/
+cp -r _template/exam exams/{slug}
+```
 
-- Put **"extract only the section names, weights, and task lists"** in the WebFetch prompt. Do not pull whole pages into context
+Copy **without reading** the template, then substitute the `{{PLACEHOLDER}}` values. Move processed files from
+`_inbox/` into `exams/{slug}/_sources/` (never delete originals). `_active.md` and `_registry.md` are not touched until
+Phase 6, so an interrupted run leaves no half-registered exam.
+
+## Phase 2 — The past-question bank
+
+Skip when there are no past questions and the user chose `③`.
+
+Normalize every past question into one file, numbered in source order:
+
+```
+exams/{slug}/_sources/questions/Q001.md      (Q0001 once there are more than 999)
+```
+
+```markdown
+<!-- source: past-papers-2024.pdf p.12 | web: examtopics.com/discussions/... -->
+<!-- retrieved: 2026-10-24 -->
+
+# Q001
+
+## Scenario
+{stem, verbatim}
+
+## Options
+A. …
+B. …
+
+## Answer
+B          ← as given by the source; a claim until verified
+```
+
+- Keep the stem and options **verbatim** — this is the user's own practice material, and the exact wording is what
+  source mode presents. Clean obvious extraction damage (merged words, broken lines) without changing meaning
+- Options that exist only as images are **transcribed**, never skipped. An unreadable item is still filed, and Phase 5
+  marks it void
+- Store no explanations, discussion, or vote counts — only the question and the key
+- **From the web (`②`)**: search past-question collections for the exam code, fetch page by page, and file each
+  question with its URL and retrieval date. Collect what is available rather than a sample. Tell the user the count
+
+Then start the index, one line per question:
+
+```
+exams/{slug}/_sources/questions/index.jsonl
+{"id":"Q001","answer":"B"}
+```
+
+Phase 4 adds `topics`, Phase 5 adds `level`, `recall`, and `void`. `exam-quiz` source mode reads it in place of the
+question files' metadata and may later add `void` or `key_fix`. Report one line: `기출 529문항 정리 (이미지 12건 전사)`.
+
+## Phase 3 — Discover the exam's own structure
+
+**Do not assume the exam has domains.** Find out how it is actually organized and record that — every later skill reads
+it rather than guessing.
+
+- Put **"extract only the section names, weights, and task lists"** in the WebFetch prompt. Do not pull whole pages
 - For PDFs, convert on the command line and read only the relevant sections
 - If the weights cannot be found, **do not guess** — ask the user
-
-### The three shapes an exam takes
 
 | `structure` | Looks like | Weight comes from |
 |---|---|---|
@@ -82,194 +140,154 @@ Deciding the structure is the whole reason this phase exists — every later ski
 | `counted` | 과목 with a fixed number of questions each — Korean national certifications | Questions per section ÷ total |
 | `flat` | A single curriculum with no grouping at all | None. Every topic is equal |
 
-Record the choice in `blueprint.md` as `structure:`, and use the exam's own word for the grouping
-(`domain`, `과목`, `area`) in the `section_label:` field. The system calls it a **section** internally;
-the label is what the user sees.
+Record it in `blueprint.md` as `structure:`, with the exam's own word for the grouping (`domain`, `과목`, `area`) in
+`section_label:`. `flat` is a legitimate outcome — forcing a structure invents weights that distort every allocation
+downstream.
 
-`flat` is a legitimate outcome, not a failure to find structure. Some exams genuinely have none —
-forcing one invents weights that do not exist and distorts every allocation downstream.
+Korean 출제기준 often runs three deep. Flatten the middle: 주요항목 → section, 세부항목 → grouping only (not stored),
+세세항목 → leaf topic.
 
-### Hierarchies deeper than two levels
+## Phase 4 — Topics, validated against the bank
 
-Korean 출제기준 often runs three deep. Flatten the middle:
-
-```
-주요항목  → section
-세부항목  → grouping only, not stored
-세세항목  → leaf topic
-```
-
-Keep the middle level out of the blueprint. It is useful while breaking topics down and noise afterwards.
-
-## Phase 3 — Topic breakdown
-
-Break each domain down to **leaf topics**. A leaf is "a unit that one question can verify."
+Break each section down to **leaf topics** — a unit one question can verify.
 
 - Too coarse (`Networking`) makes coverage meaningless; too fine (`TGW route table propagation settings`) is unmanageable
-- Rule of thumb: **one topic = one concept note = 2-5 questions**
-- 60-150 topics per certification is the realistic range
+- Rule of thumb: **one topic = one concept note = 2-5 questions**. 60-150 topics is the realistic range
+- At the 150 ceiling, **do not silently truncate or merge the tail.** Report `"{n}개가 나옵니다. 150 상한을 넘습니다."`
+  and let the user choose between raising the ceiling and coarsening — a quietly cut blueprint has a coverage
+  denominator that looks complete while the tail is missing
+- IDs run `T-001` upward with no section encoded; increment `topic_id_next` after each. **Never roll it back.**
+  Full rules in `references/blueprint-format.md`
+- With many sections, one subagent per section may draft topics in parallel; they return topic lists only
 
-If the natural breakdown reaches the 150 ceiling, **do not silently truncate or merge the tail.**
-Report it: `"출제기준 기준 {n}개가 나옵니다. 150 상한을 넘습니다."` and let the user decide between
-raising the ceiling and coarsening the granularity. A blueprint quietly cut at the limit produces a
-coverage denominator that looks complete while the tail of the exam is missing.
+### Map the bank and let it correct the topics
 
-### Topic IDs
+With a bank, map every question to the topics whose knowledge is **load-bearing** — some option dies, or the chain
+advances, on that topic's facts. A service merely named in the stem does not count. Write the result into the index
+(`"topics":["T-041","T-005"]`). For a large bank, split by question range across subagents; each writes its own
+`index.part-N.jsonl` and the main session merges them.
 
-```
-Sequential from T-001. The domain is not encoded.
-Increment topic_id_next in blueprint.md after each issue.
-```
+Then use the mapping to fix the topic list before anything depends on it:
 
-**Never roll `topic_id_next` back.** Two different topics would end up with the same ID and mastery history is poisoned.
-Full rules in `references/blueprint-format.md`.
+| Finding | Action |
+|---|---|
+| Questions that fit no topic | A missing topic — add it, or widen the closest one |
+| Questions crowding one topic far past the rest | Too coarse — split it |
+| A topic with no question | Keep it (the guide covers it) and list it as unexamined |
 
-With many domains, spawn one subagent per domain to break them down in parallel.
-**Subagents return topic lists only** — no descriptive prose.
+Report one line: `토픽 130개 · 기출 매핑 98% · 미출제 토픽 7개`. `--refine` re-runs this whole phase, mapping included.
 
-## Phase 4 — Question format analysis ★
+## Phase 5 — Question format analysis ★
 
 Skipping this means generating plausible-looking questions that don't match the real exam.
 
-1. Collect sample questions, in this order
-   - `_sources/` — a past-paper collection or textbook the user supplied (**best option**)
-   - AWS: Exam Guide appendix samples plus the free Skill Builder Official Practice Question Set
-   - CNCF: curriculum plus the official exam environment notes
-   - Anthropic: official exam information pages
-   - Third-party past-question sites — `comcbt.com` (domestic), `examtopics.com` (vendor) — are permitted
-     **for format analysis only.** Read the question shape; never carry over answers or explanations, and never cite
-     them in a note. See `_spec/source-policy.md`
-2. Analyze and fill `format.md` — type mix, stem length, question phrasings, requirement keywords, distractor patterns, prohibitions
-   - **Derive the `angles:` vocabulary here too.** 4-8 short codes naming the axis this exam varies along:
-     requirement keywords for a scenario-heavy exam, question types otherwise. Fix them explicitly — a free-form
-     label drifts (`cost` / `cost-effective` / `비용`) and stops being comparable across sessions.
-     Leave it empty rather than guessing if the samples show no consistent axis
-   - **Derive the difficulty vocabulary here too — from real questions, not from the official sample set.**
-     An official sample set is a showcase: it demonstrates each question type once and is deliberately balanced,
-     so its difficulty spread is the sample's, not the exam's. Calibrate against volume instead, in this order:
+1. Collect questions, in this order: **the bank** (best by far) → the vendor's official samples and practice sets →
+   past-question collections on the web (shape only; answers unverified, wording never copied — see
+   `_spec/source-policy.md`)
+2. Analyze and fill `format.md` — type mix, stem length, question phrasings, requirement keywords, prohibitions
+   - **Distractor patterns from the real questions**, not a generic list: what the wrong options in this exam actually
+     do. IDs are `P1`, `P2`, … — never `D`, which collides with section IDs. This is the only pattern vocabulary:
+     grading names patterns by these IDs and the wrongbook records them
+   - **`angles:`** — 4-8 short codes naming the axis this exam varies along: requirement keywords for a scenario-heavy
+     exam, question types otherwise. Fixed explicitly, since free-form labels drift (`cost` / `cost-effective` / `비용`).
+     Leave it empty if the questions show no consistent axis
+   - **Difficulty — from real questions, not the official sample set**, which is a showcase balanced by design.
+     Calibrate on the bank, else on tens of web past questions, and use official samples only to confirm a shape.
+     Work the sources until something separates the hard questions from the easy ones; do not stop at the first
+     failed fetch, and do not ask the user to supply the criteria.
 
-     ```
-     1. _sources/ past papers the user supplied
-     2. Tier C past-question sites — already permitted above for format analysis, and this is where real
-        difficulty lives. Read tens of questions, not a handful
-     3. Official samples — enough to confirm a shape, not to set a distribution
-     ```
+     **Sort the real questions from easiest to hardest and read off what actually changes** — it is rarely the
+     number of requirements. Judge reasoning depth as if every subject fact were supplied; track unfamiliarity as
+     recall load, never as a higher level; count only inferences the solver must derive. **Everything level-specific
+     goes in `format.md`, never in a skill** — the lines, the tests that confirm each level, the conditions that void an
+     item — because quiz runs exactly what `format.md` lists, and a rule in quiz would apply to every exam.
 
-     Work the sources until something separates the hard questions from the easy ones. Search, fetch, and read
-     around a site that will not extract cleanly; do not stop at the first failed fetch and do not ask the user
-     to supply the criteria.
-
-     Then write the three E/M/H lines in `format.md`. **Sort the real questions you found from easiest to
-     hardest and read off what actually changes between them** — it is rarely the number of requirements.
-     Evaluate reasoning depth as if the candidate has already been given every subject fact the item needs.
-     Track unfamiliarity as recall load, never as evidence for a higher level. Count only inferences the solver
-     must derive; decisions already stated together inside the correct option do not count.
-     **Everything level-specific goes in `format.md`, never in a skill**: the lines, the tests that confirm each
-     level, and the conditions that void an item. quiz runs exactly what `format.md` lists — a rule written into
-     quiz instead would apply to every other exam.
-     Each line must be an instruction to name something countable, never a description of the finished
-     question: a description is self-certifying, while a naming instruction fails visibly when the level
-     is wrong. Never rewrite the skeleton sentences: a criterion phrased as a description
-     ("multi-step judgment") is self-certifying, since the author reads it, agrees with themselves, and nothing
-     can contradict them. Phrased as an instruction to name something, a wrong level shows up as a slot that
-     cannot be filled. Keep that reasoning here — `format.md` carries the result, not the method. Record where the calibration came from in
-     `difficulty_basis` (`examtopics n=40 (date)` / `_sources/… n=120` / `[ESTIMATED]`).
-
-     Also write per-mode ratios (`diagnostic`, `weakness`, `section`, `mock`); every ratio must total 100.
-     Mark ratios `[ESTIMATED]` when fewer than five usable samples exist — but register the exam either way.
-   - **Measure topic mixing on the same real questions.** For each one, count the blueprint topics whose knowledge
-     is load-bearing — a topic counts only if some option is killed or the chain advances on that topic's facts,
-     not because its service is merely named. Write the result as a `## Topic mixing` section in `format.md`:
+     Each line must be an instruction to name something countable, never a description of the finished question.
+     A description ("multi-step judgment") is self-certifying — the author reads it and agrees — while a naming
+     instruction fails visibly: a wrong level shows up as a slot that cannot be filled. Record the calibration source
+     in `difficulty_basis` (`_sources/questions n=529 (date)` / `web n=40` / `[ESTIMATED]`). Write per-mode ratios
+     (`diagnostic`, `weakness`, `section`, `mock`), each totaling 100; mark them `[ESTIMATED]` under five usable samples.
+   - **Topic mixing**, measured on the same questions with the same load-bearing rule as the mapping:
 
      ```
      topic_mix: 45% (2 topics 40% · 3+ 5%)
-     topic_mix_basis: examtopics n=505 (2026-09-27)
+     topic_mix_basis: _sources/questions n=505 (2026-09-27)
      ```
 
-     This is a property of the exam, not of the tooling: scenario exams routinely make one question turn on two
-     services' interaction, while a recall-style exam may be 0%. Write `topic_mix: 0%` when it genuinely is —
-     never omit the section, since quiz treats a missing one as single-topic. It is measured independently of
-     difficulty: two topics side by side is breadth, and only raises the level when one topic's result feeds
-     the other's inference.
-3. **Synthesize two anchors** — never copy originals. Same format, different subject. Different domains, one
-   single-select and one multiple-response. Draft the higher-level anchor's trace first, then confirm every slot
-   of its line fills and every test `format.md` lists for that level passes. Reject an anchor when the correct
-   option paraphrases the whole trace or the correct answer positions form a visible family.
-4. Fill the compact DRIFT-CHECK block at the top (harvest reads it with a bounded read)
+     Write `topic_mix: 0%` when it genuinely is — quiz treats a missing section as single-topic. Two topics side by
+     side are breadth; only one topic's result feeding the other's inference raises the level.
+3. **Write each bank question's level into the index** while calibrating — `"level":"M","recall":"twin"` — and mark
+   items that cannot be answered as written `"void":true,"void_reason":"…"`: two defensible answers, a key the official
+   docs contradict, options lost in extraction, a service change that makes the key impossible
+4. **Synthesize two anchors** — never copy originals. Same format, different subject; different sections, one
+   single-select and one multiple-response. Draft the higher-level anchor's trace first and confirm every slot of its
+   line fills and every listed test passes. Reject an anchor whose correct option paraphrases the whole trace, or whose
+   correct positions form a visible family
+5. Fill the compact DRIFT-CHECK block at the top (harvest reads it with a bounded read)
 
-If no samples can be found, draft from the typical format of that vendor and family and mark **every field `[ESTIMATED]`**.
-Tell the user: `"샘플을 찾으면 /exam-init --format 으로 갱신하세요"`.
+No samples anywhere → draft from the vendor's typical format, mark **every field `[ESTIMATED]`**, and tell the user:
+`"기출을 구하면 /exam-init --bank 로 넣고 --format 으로 갱신하세요"`.
 
 For hands-on exams (CKA/CKAD and similar), set `format_type: performance`.
 
-## Phase 5 — Scaffold
+## Phase 6 — Register
 
-**Bootstrap first.** `exams/` is gitignored, so a fresh clone has no `_active.md` or `_registry.md`.
-Create them from the template if they are missing — never hand-write them, the column schema lives in the template.
-
-```bash
-mkdir -p exams
-[ -f exams/_active.md ]   || cp _template/exams/_active.md   exams/
-[ -f exams/_registry.md ] || cp _template/exams/_registry.md exams/
-```
-
-Then scaffold the exam itself:
-
-```bash
-cp -r _template/exam exams/{slug}
-```
-
-Copy **without reading** the template, then substitute the `{{PLACEHOLDER}}` values. Six files appear at once.
-
-Then:
-- `mkdir -p exams/{slug}/notes/d{n}-{section-slug}` for each section. **Under `structure: flat`, skip this** —
-  notes go directly in `notes/{topic}.md`
-- Move anything processed from `_inbox/` into `exams/{slug}/_sources/`
-- `blueprint.md` — write the domain and topic tables
+- `mkdir -p exams/{slug}/notes/{section-slug}` for each section — **skip under `structure: flat`**, where notes go in
+  `notes/{topic}.md`
+- `blueprint.md` — the section and topic tables
 - `mastery.md` — one row per topic, all ⬜, coverage `0/{n}`
 - `exams/_active.md` → the new slug (overwriting is correct — only one exam is active)
-- `exams/_registry.md` → **append a row, preserving every existing row**
+- `exams/_registry.md` → **append one row with `Edit`, preserving every existing row**
 
-### Registry append — do not regenerate the table
+**Never regenerate the registry table.** That silently drops every other exam from the overview while their data
+files stay intact, so nothing looks broken until `/exam-status` comes up short. Remove the template's empty placeholder
+row only on the first registration. Rows stay in registration order. If another exam's row has gone missing, do not
+re-add it — tell the user to run `/exam-status --rebuild`.
 
-Read `exams/_registry.md` first and add exactly one row with `Edit`. **Never rewrite the table body.**
-Regenerating it silently drops every previously registered exam from the overview, and the data files stay
-intact so nothing looks broken until `/exam-status` comes up short.
+## Phase 7 — Report and the next step
 
-- Remove the template's empty placeholder row (`| | | | | | | | |`) only on the first registration
-- Rows stay in registration order
-- Same rule applies to `exam-quiz` and `exam-harvest` when they refresh their own row: edit that row, touch nothing else
-- If a row for another exam has gone missing, do not silently re-add it — tell the user to run `/exam-status --rebuild`
-
-## Phase 6 — Report, 5 lines or fewer (Korean)
+Five lines or fewer, and the last line is the path forward — what to type next, chosen by what this run produced:
 
 ```
 AWS SAP-C02 등록 완료  D-42
-도메인 4개 / 토픽 79개 (전부 ⬜)
-형식: 5지선다 · 단일 70 / 다중 30 · 지문 평균 110단어 · 난도 E10/M40/H50
-노트 0개 — /exam-harvest 로 시작하거나, 바로 /exam-quiz 로 진단 3회부터
+도메인 4개 · 토픽 130개 · 기출 529문항 (매핑 98%, 미출제 토픽 7개)
+형식: 4지선다·복수응답 · 단일 79 / 다중 21 · 난도 E65/M25/H10
+다음: /exam-quiz 소스모드 20 — 기출을 순서대로. 사이사이 /exam-quiz 로 미출제 토픽 진단
 ```
+
+| What exists | Next step to print |
+|---|---|
+| A bank | `/exam-quiz 소스모드 20`, with `/exam-quiz` in between for the topics the bank never reaches |
+| No bank | `/exam-quiz`, then `/exam-harvest 3` for the topics it queues |
 
 ---
 
+## --bank — adding past questions later
+
+Run Phase 2 on the new files, numbering after the bank's last ID. Map the new questions (Phase 4 mapping only —
+new topics still need `--refine`) and give them levels (Phase 5 step 3). Report the count and whether the new questions
+exposed topics the blueprint lacks.
+
 ## --format re-run
 
-1. Re-run Phase 4 and replace `format.md`, refreshing `guide_version` and `verified_at`
-2. Mark the related entries in `state/format-drift.md` as `applied (v{new}, {date})`
-3. If domain weights changed, continue into **blueprint migration**
+1. Copy the current `format.md` to `state/_archive/format-{YYYY-MM-DD}.md` (add `-2` on a second run that day)
+2. Re-run Phase 5 and replace `format.md`, refreshing `guide_version` and `verified_at`
+3. Mark the related entries in `state/format-drift.md` as `applied (v{new}, {date})`
+4. If section weights changed, continue into **blueprint migration**
 
 ### Blueprint migration
 
 ```
-Domain reorganized  →  keep IDs, change only the domain column in blueprint
-Topic removed       →  status: deprecated (never delete the row — mastery history survives, only questions are excluded)
-Topic added         →  issue a new ID from topic_id_next
-Weights changed     →  blueprint only; mastery unaffected
+Section reorganized  →  keep IDs, change only the section column in blueprint
+Topic removed        →  status: deprecated (never delete the row — mastery history survives, only questions are excluded)
+Topic added          →  issue a new ID from topic_id_next
+Weights changed      →  blueprint only; mastery unaffected
 ```
 
 Present the change summary as a table and **get confirmation** before applying.
 
 ## Do not create friction
 
-A missing Exam Guide must not block registration. Rough out the domains, start, and tell the user they can refine
-later with `/exam-init --refine`. Not starting is worse than being imprecise.
+Ask about sources once (Phase 0) and never again. A missing exam guide must not block registration either — rough
+out the sections, start, and tell the user they can refine later with `/exam-init --refine`. Not starting is worse
+than being imprecise.

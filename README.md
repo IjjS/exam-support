@@ -93,30 +93,44 @@ flowchart TD
 
 ## Getting started
 
+### 0. Put past questions in `_inbox/` — the single biggest lever
+
+A past-question collection makes every later step match the real exam: the topics are checked against what is
+actually asked, difficulty is calibrated on real items, and the questions become a bank you can work through in order.
+No collection? `/exam-init` asks once, and can gather past questions from the web for you.
+
 ### 1. Register an exam
 
 ```
 /exam-init AWS SAP
 ```
 
-Finds the official Exam Guide, extracts domains and their weights, and breaks them down to leaf topics
-to build your study map (`blueprint.md`). It also analyzes official sample questions to produce a
-**question format spec** (`format.md`) — how many options, how much of the exam is multiple-response,
-how long the stems run.
+Asks about sources if `_inbox/` is empty, then finds the official exam guide, extracts sections and their weights, and
+breaks them down to leaf topics (`blueprint.md`). With past questions it also:
 
-Mention your exam date if you have one and a D-day gets tracked.
+- files each one into a bank — `_sources/questions/Q001.md …` plus `index.jsonl`
+- maps every question to its topics, and uses that to fix the topic list (missing topics, overloaded ones)
+- calibrates the **question format spec** (`format.md`) — option count, multiple-response share, stem length,
+  difficulty levels, distractor patterns — on the real items, and records each question's level
+
+Mention your exam date if you have one and a D-day gets tracked. The last line of the report says what to run next.
+Past questions found later go in with `/exam-init --bank`.
 
 ### 2. Answer questions
 
 ```
-/exam-quiz
+/exam-quiz 소스모드 20     # the past questions, in order — when you have a bank
+/exam-quiz                 # diagnostic: freshly generated, untested topics first
 ```
 
-Five questions at once. Answer on one line:
+Answer on one line:
 
 ```
 1 3? 2 5?? 4
 ```
+
+Source mode is the closest practice to the real paper; diagnostic sessions in between reach the topics the bank never
+asks about.
 
 ### 3. Fill in the knowledge
 
@@ -178,7 +192,8 @@ Everything ends up in `exams/{slug}/_sources/`. Originals in `_inbox/` are never
 | Material | Skill | Goes into |
 |---|---|---|
 | Exam guide · 출제기준 | `/exam-init` | `blueprint.md` — domains and topics |
-| Past papers · sample questions | `/exam-init` (Phase 4) | `format.md` — question format only, no original text stored |
+| Past papers | `/exam-init`, `/exam-init --bank` | `_sources/questions/` — the bank for source mode; topic mapping; `format.md` calibration |
+| Official sample questions | `/exam-init` (Phase 5) | `format.md` — question format only |
 | Textbook · lecture notes · docs | `/exam-harvest` | `notes/` — concept notes |
 | Exam announcement | `/exam-init` | `exam.md` — question count, duration, passing score |
 
@@ -186,7 +201,8 @@ If you add an exam guide **after** registration, run `/exam-init --refine` (blue
 (question format) — harvest only writes notes.
 
 Where this matters most is exams with thin web coverage. AWS and CNCF publish everything online, but Korean
-certifications distribute their 출제기준 as HWP and do not release past papers for CBT sittings.
+certifications distribute their 출제기준 as HWP and rarely release past papers, so your own collection is often the
+only bank there is.
 With the 출제기준 in hand the blueprint comes out cleaner than a vendor exam's —
 `주요항목 → 세세항목` maps straight onto domains and leaf topics.
 
@@ -228,7 +244,8 @@ Plain `2` every time works fine, but that switches off one of the three layers.
 
 | Command | What it does |
 |---|---|
-| `/exam-quiz` | Take questions. Mode is decided automatically by session count |
+| `/exam-quiz` | Diagnostic questions — freshly generated, untested topics first |
+| `/exam-quiz 소스모드 20` | Work through the past-question bank in order |
 | `/exam-quiz 10문제` | Set the number of questions |
 | `/exam-quiz D2` | One domain only |
 | `/exam-quiz 모의고사 30` | Mock exam. Batch grading plus a per-domain score table |
@@ -243,6 +260,8 @@ Plain `2` every time works fine, but that switches off one of the three layers.
 | `/exam-desc 상권분석` | Explain a whole domain — what it covers and how it is weighted |
 | `/exam-desc W-001` | Pull a past question back out of the log |
 | `/exam-init 자격증명` | Register a new exam |
+| `/exam-init --bank` | Add past questions to the bank |
+| `/exam-init --refine` | Refine the topics and re-map the bank |
 | `/exam-init --format` | Refresh the question format spec |
 | `/exam-reset` | Reset state (after backup) |
 | `/exam-reset --rm 자격증` | Unregister an exam entirely, archiving it first |
@@ -252,28 +271,17 @@ Plain `2` every time works fine, but that switches off one of the three layers.
 
 ## Study modes
 
-```mermaid
-flowchart LR
-    S1["session 1<br/>basic"] --> S2["session 2<br/>basic"] --> S3["session 3<br/>basic"]
-    S3 -->|"gate opens"| S4["session 4+<br/><b>weakness</b>"]
-    S4 --> S4
-    M(["mock exam<br/>counts toward the gate"]) -.-> S3
-    style S4 fill:#2d5016,color:#fff
-```
-
-The first three sessions are locked to **basic mode**, and they lean hard on purpose — a question you were
-always going to get right says very little about where your blind spots are.
-
-Weakness mode only means something once weaknesses have surfaced, and one or two sessions is too small a sample.
-So until three basic-mode sessions (diagnostic or mock) are done, asking for weakness mode still runs basic mode.
-Basic mode prioritizes untested (⬜) topics, so three rounds pull the blind spots to the surface.
-
-| Mode | When | Difficulty mix |
+| Mode | What it asks | Use it for |
 |---|---|---|
-| Basic (diagnostic) | Sessions 1-3 | easy 20 / med 40 / hard 40 |
-| Weakness | Session 4 onward | med 30 / hard 70 |
-| Section | When you name a domain | That domain |
-| Mock exam | On request | Real exam weights |
+| **Source** (`소스모드`) | The past-question bank, in order, as written | The closest practice to the real paper |
+| **Diagnostic** (default) | Fresh questions, untested (⬜) topics first, by section weight | Finding what you never met — including topics the bank never reaches |
+| **Weakness** (on request) | Your highest-scoring weak topics and open wrong answers | Drilling known gaps, once three diagnostic or mock sessions exist |
+| **Section** (`D2`) | One section only | Focused work |
+| **Mock exam** (`모의고사 30`) | Real exam weights, graded in batches | Exam feel and a per-section score |
+
+Diagnostic stays the default at every session count. Coverage is the long pole, and a mode that switched itself to
+drilling known weaknesses would stop looking for the unknown ones. The difficulty mix of each generated mode comes
+from your exam's `format.md`, calibrated on its real questions.
 
 ### The same topic, from a different side
 
@@ -310,6 +318,7 @@ exams/aws-sap/
 ├── exam.md          Exam metadata (code, question count, time, passing score, D-day)
 ├── format.md        Question format spec, format anchors, question angles
 ├── blueprint.md     Structure, sections, weights, topic tree (immutable spec)
+├── _sources/        Your files; questions/ holds the past-question bank and its index
 ├── notes/           Concept notes, comparison tables, fact cards
 └── state/           Proficiency, wrong answers, session log, harvest queue
 ```
@@ -347,6 +356,7 @@ flowchart LR
         direction TB
         BP["blueprint.md"]
         FM["format.md"]
+        QB["_sources/questions/"]
         NT["notes/"]
         CM["notes/_compare/"]
         MA["state/mastery.md"]
@@ -358,6 +368,7 @@ flowchart LR
 
     I --> BP
     I --> FM
+    I --> QB
     I --> MA
     H --> NT
     H --> CM

@@ -5,6 +5,7 @@
 basic_done: 0  (diagnostic 0 + mock 0)   ← weakness mode is blocked below 3
 weakness: 0  |  questions: 0  |  correct: 0 (—)  |  lucky: 0
 last: —
+source_next: Q001   ← source mode cursor: the next past question to present
 ```
 <!-- /HOT -->
 

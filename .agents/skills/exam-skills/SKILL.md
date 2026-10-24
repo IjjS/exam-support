@@ -45,10 +45,10 @@ weakness-manager · 스킬 8개                    활성: aws-sap-c02
   /exam-skills     이 목록
 
 가끔
-  /exam-init       새 자격증 등록  (--format · --refine · --lang)
+  /exam-init       새 자격증 등록 · 기출 정리  (--bank · --format · --refine)
   /exam-reset      기록 초기화  (백업 후)
 
-처음이면   /exam-init {자격증명}  →  /exam-quiz ×3  →  /exam-status  →  /exam-harvest
+처음이면   기출을 _inbox/에  →  /exam-init {자격증명}  →  /exam-quiz 소스모드  →  /exam-harvest
 ```
 
 Keep it inside one phone screen. If the active exam is `—`, replace the last line with
@@ -61,12 +61,12 @@ the frontmatter plus the table below covers it.
 
 | Skill | Writes | Notable |
 |---|---|---|
-| `exam-quiz` | mastery · wrongbook · sessions · queue · log | 5 questions at once. `모의고사 30` for a mock |
+| `exam-quiz` | mastery · wrongbook · sessions · queue · log | 5 questions at once. `소스모드 20` for the past-question bank · `모의고사 30` for a mock |
 | `exam-harvest` | notes · comparison tables · queue | `3` for a small batch. Parallel subagents |
 | `exam-status` | nothing | `--rebuild` recomputes the registry cache |
 | `exam-comp` | comparison tables | No argument → lists what needs one |
 | `exam-desc` | nothing | Topic, domain, or free-form theme |
-| `exam-init` | blueprint · format · exam · scaffold | `--format` · `--refine` |
+| `exam-init` | blueprint · format · exam · question bank · scaffold | Asks for past questions first. `--bank` · `--format` · `--refine` |
 | `exam-reset` | state, after backup | Four scopes; `stats` is the default |
 | `exam-skills` | nothing | This |
 

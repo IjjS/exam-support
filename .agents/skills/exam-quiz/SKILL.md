@@ -1,6 +1,6 @@
 ---
 name: exam-quiz
-description: Generate and grade certification exam questions, then record the weaknesses they expose. Use when the user says "문제 내줘", "퀴즈", "시험 보자", "5문제", "모의고사", "D2만 풀래", "문제 풀기", or "quiz". Picks diagnostic vs weakness mode automatically from session count, treats confidence-tagged guesses as wrong even when the answer is correct, classifies error types, and updates the state files.
+description: Generate and grade certification exam questions, then record the weaknesses they expose. Use when the user says "문제 내줘", "퀴즈", "시험 보자", "5문제", "모의고사", "D2만 풀래", "문제 풀기", "기출 풀래", "소스모드", or "quiz". Diagnostic by default, weakness mode on request, and source mode works through the past-question bank in order; treats confidence-tagged guesses as wrong even when the answer is correct, classifies error types, and updates the state files.
 ---
 
 # exam-quiz
@@ -48,6 +48,7 @@ user asked for weakness, basic_done < 3    →  basic mode, and say so:
 ```
 
 Weakness requests are phrased as `약점모드` · `약점만` · `틀린 것 위주` · `오답 다시`.
+Source requests are `소스모드` · `기출` · `기출 20` — read `references/source-mode.md` and follow it in place of Phases 2-3.
 Anything else — a bare `/exam-quiz`, a count, a domain — is basic mode.
 
 An explicit user instruction wins: domain (`D2`), question count (`10문제`), mock exam.
@@ -58,8 +59,9 @@ An explicit user instruction wins: domain (`D2`), question count (`10문제`), m
 | Weakness | Top scores + lucky-guess topics + active wrong answers |
 | Section | Same rules inside the named section |
 | Mock exam | → `references/mock-exam.md` |
+| Source | The past-question bank, in order → `references/source-mode.md` |
 
-Default is **5 questions**. Announce the resolved mode in one line before starting.
+Default is **5 questions** (source mode: 20). Announce the resolved mode in one line before starting.
 
 Take both the difficulty rubric and the resolved mode's target ratio from `format.md`. `더 어렵게` uses the
 exam's `harder` ratio without changing topic-selection mode. Scale by largest remainder. If the required rubric

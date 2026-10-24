@@ -1,7 +1,7 @@
 # Reading source files
 
 Read this before opening anything in `_inbox/` or `exams/{slug}/_sources/`.
-Used by `exam-init` (Phase 0, Phase 4) and `exam-harvest` (Phase 1).
+Used by `exam-init` (Phases 0, 2, and 5) and `exam-harvest` (Phase 1).
 
 ---
 
