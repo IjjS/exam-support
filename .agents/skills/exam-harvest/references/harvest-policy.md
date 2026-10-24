@@ -58,9 +58,9 @@ Attach a source to each individual number or limit — those change most often, 
 Write to `notes/{section}/{topic}.md`, or `notes/{topic}.md` when the blueprint says `structure: flat`.
 English kebab-case filename, matching the topic name.
 
-**Target 800-1,500 tokens.** quiz reads five of these in one session, so the top of that range is already 7.5k —
-past 1,500 and the cost lands on every session for depth most topics never use. Under 800 the note runs dry
-after two or three questions and the topic starts coming back to the harvest queue.
+**At least 800 tokens, no upper limit.** Under 800 the note runs dry after two or three questions and the topic
+starts coming back to the harvest queue. Above that, let it grow: a note is accumulated knowledge, and depth a
+topic has earned stays in it.
 
 ````markdown
 ---

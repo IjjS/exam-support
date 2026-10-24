@@ -163,14 +163,13 @@ no Tier C hit     → model draft → verify against A/B
 verification fails → [UNVERIFIED]
 ```
 
-**Read exactly the notes for the topics you selected — five files, in full, and nothing else.**
-Never read a whole section's worth of notes. At a measured 1.2k per note, five is already 6k; a domain of
-thirty would be 36k for five questions.
+**Read exactly the notes for the topics you selected, in full, and nothing else.**
+Never read a whole section's worth of notes — notes have no size cap, so that read grows without bound.
 
 ### When the note runs out
 
-A note holds 3-7 questions' worth of material, depending on where in the 800-1,500 range it landed. Ask past
-that and you are rewording a question already asked, which is exactly the failure the whole system exists to prevent.
+A note holds a finite number of questions' worth of material. Ask past that and you are rewording a question
+already asked, which is exactly the failure the whole system exists to prevent.
 
 ```
 mastery.Att >= 4  and the note has not been updated since
@@ -182,8 +181,8 @@ Both halves matter. The source pipeline rescues this question; the queue entry m
 stops needing rescuing. `exhausted` is not `thin-note` — the note was adequate and got used up, so harvest
 should extend it rather than start over.
 
-Four is a single threshold against a range, so it fires early for a note at the top of the range and on time
-for one at the bottom. **Early is the safe direction**: queueing too soon costs one row, queueing too late
+Four is a single threshold against notes of every size, so it fires early for a deep note and on time for a
+short one. **Early is the safe direction**: queueing too soon costs one row, queueing too late
 costs a repeated question on the topic the user is worst at.
 
 This bites hardest in weakness mode, where a stubborn topic returns every second or third session. That topic
