@@ -68,7 +68,7 @@ If the user asks for depth on a specific question after seeing this, give it the
 ### Classifying what goes in the wrongbook
 
 For every `miss`, `lucky`, and `shaky` entry, **read `_spec/error-taxonomy.md`** and assign a type.
-Skip that read entirely if all five were confident and correct.
+Skip that read entirely if every answer was confident and correct.
 
 `shaky` almost always classifies as `confusion` — "I narrowed it to two" is the definition of a blurred
 boundary. If the user names the other option they were weighing, record the pair; it becomes an `exam-comp` candidate.

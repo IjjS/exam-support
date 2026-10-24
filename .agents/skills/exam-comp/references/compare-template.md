@@ -14,6 +14,72 @@ Three or more in a table means too many columns to read on a phone. Switch to br
 Filenames are English kebab-case. Sort the `vs-` pair alphabetically to avoid duplicates
 (`vs-alb-vs-nlb` and `vs-nlb-vs-alb` are the same document).
 
+## Pairwise table — `_compare/vs-{a}-{b}.md`
+
+````markdown
+---
+type: compare
+topics: [T-041, T-052]
+updated: 2026-08-15
+---
+
+# Transit Gateway vs VPC Peering
+
+## The one line that decides it
+**Transitive routing needed, or three or more VPCs → TGW. A two-party link → Peering.**
+
+## Comparison
+| | Transit Gateway | VPC Peering |
+|---|---|---|
+| Transitive routing | Yes | **No** |
+| Scale | Hub-and-spoke, thousands | 1:1, grows as N² |
+| Cost | Hourly + data processing | No attachment fee, transfer only |
+| Latency | One extra hop | Direct |
+| Bandwidth | Per-attachment ceiling | VPC bandwidth |
+
+## Where the exam splits them
+- `LEAST operational overhead` + many VPCs → TGW
+- `MOST cost-effective` + two VPCs → Peering
+- "Several VPCs share the on-premises connection" → TGW (Peering cannot do it)
+
+## My error history
+- 2026-08-10 T-041: chose Peering in a four-VPC scenario, looked only at cost and missed operational burden
+
+## Sources
+- web: docs.aws.amazon.com/... (2026-08-15)
+````
+
+## Decision guide — `_compare/choose-{topic}.md`
+
+With three or more options, a branch tree beats a table.
+
+````markdown
+# Choosing a hybrid connectivity option
+
+## Branches
+```
+Need dedicated bandwidth or consistent latency?
+├─ Yes → Direct Connect
+│         └─ Needs redundancy? → two DX circuits, or DX + VPN backup
+└─ No  → Only encryption needed?
+          ├─ Yes, fast to stand up → Site-to-Site VPN
+          └─ Shared by several VPCs → TGW + VPN
+```
+
+## Answer by requirement keyword
+| Keyword | Tends toward |
+|---|---|
+| MOST cost-effective | VPN |
+| consistent/predictable latency | Direct Connect |
+| LEAST time to implement | VPN |
+| MOST resilient | Two DX circuits (+ VPN backup) |
+
+## Traps
+- "DX is always the answer" is false. It takes weeks to provision, so `quickly` means VPN
+````
+
+---
+
 ---
 
 ## Required elements
@@ -69,7 +135,7 @@ Entries that break a "X is always the answer" belief. Ties directly into distrac
 
 ## Size
 
-**300-600 tokens.** Like a note, it has to be something quiz can read.
+**One phone screen — roughly 300-600 tokens.** The user reads it on a phone, usually right before a quiz.
 Growing past that means the wrong things were grouped together — split it.
 
 ---

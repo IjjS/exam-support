@@ -203,7 +203,7 @@ Put the A/B verifier URL in `Source`; leave it empty only when verification fail
 
 ### Presentation
 
-Present all five questions **at once**. Questions and options in English, the surrounding guidance in Korean.
+Present all questions **at once**. Questions and options in English, the surrounding guidance in Korean.
 Options are numbered, matching the numeric answer syntax.
 
 ```
@@ -399,17 +399,7 @@ Use `[UNVERIFIED]` only when the verification step failed; never omit it in that
 
 ---
 
----
-
 ## Phase 4 onward
 
 When the answers arrive, **read `references/grading.md`** and follow it. Do not grade from memory —
-the verdict table, the origin rules, and the six writes are all specified there.
-
-## Never
-
-- Hint at the answer in the options (`(recommended)`, length bias, `All of the above`)
-- Re-ask a previous question with its original wording
-- Read `blueprint.md` or `state/log/`
-- **Reveal, rank, or hint at answers before the user responds — including inside a formatting example.**
-  A worked answer-syntax string is the most common way this happens; see the guard in Phase 3
+the verdict table, the origin rules, and the writes are all specified there.
