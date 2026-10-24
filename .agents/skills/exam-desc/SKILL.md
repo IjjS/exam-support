@@ -89,7 +89,7 @@ The explanation ends. Then, **only if it is actionable**, add a single line.
 |---|---|
 | 🟥 or 🟨, or repeated wrong answers on this topic | `⚠ 이 토픽 3연속 오답 (개념혼동) → /exam-comp TGW vs VPC Peering` |
 | Lucky guess recorded (`??` but correct) | `⚠ 지난번 찍어서 맞힌 토픽입니다` |
-| No note exists | `노트 없음 — /exam-harvest 로 정리할까요?` |
+| No note, and a web fetch or search happened this turn | `노트 없음 — /exam-harvest 로 정리할까요?` |
 | 🟩, 🟦, ⬜ untested, or no history at all | **nothing** |
 
 Rules:

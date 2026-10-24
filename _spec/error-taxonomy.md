@@ -1,7 +1,6 @@
 # Error taxonomy — five types
 
-Referenced by `exam-quiz` after grading, by `exam-status` when aggregating, and by `exam-comp` when picking
-comparison-table candidates.
+Referenced by `exam-quiz` after grading and by `exam-comp` when picking comparison-table candidates.
 
 **Different reasons for a wrong answer need different treatment.** Accuracy alone flattens all five into "one wrong answer."
 

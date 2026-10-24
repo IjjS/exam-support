@@ -80,7 +80,6 @@ Add one line each, only when they apply.
 | `format.verified_at` past 90 days | `⚠ 형식 검증 {n}일 경과 — /exam-harvest 시 자동 대조` |
 | Open `major` in `format-drift.md` | `⚠ 시험 개편 감지 — /exam-init --format 필요` |
 | Queue over 10 | `⚠ 큐 {n}개 적체 — 미검증 문제가 늘고 있습니다` |
-| `basic_done` under 3 | `진단 {n}/3회 — 3회 채우면 약점 모드로 전환됩니다` |
 | D-day within 30 and coverage under 70% | `⚠ D-{n}에 커버리지 {n}% — 미출제 영역 우선 권장` |
 | No session for 7+ days | `마지막 세션 {n}일 전` |
 
@@ -89,12 +88,11 @@ If more than three warnings apply, show only the two most severe.
 ## Next-action logic
 
 ```
-basic_done < 3                →  /exam-quiz            (keep diagnosing)
 An entire domain is ⬜         →  /exam-quiz {domain}   (blank areas first)
 queue >= 5                    →  /exam-harvest 3
 confusion errors >= 3         →  /exam-comp
 D-day <= 14                   →  /exam-quiz 모의고사 30
-otherwise                     →  /exam-quiz            (weakness mode)
+otherwise                     →  /exam-quiz
 ```
 
 ## --rebuild

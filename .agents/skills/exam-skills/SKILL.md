@@ -35,7 +35,7 @@ what to type next, and four of the eight are things they will rarely touch.
 weakness-manager · 스킬 8개                    활성: aws-sap-c02
 
 매일
-  /exam-quiz       문제 풀기. 회차에 따라 진단/약점 모드 자동
+  /exam-quiz       문제 풀기 · 채점 · 오답 기록
   /exam-harvest    공식 문서 → 개념 노트. 큐 소진
   /exam-status     커버리지 · 약점 · D-day 한 화면
 

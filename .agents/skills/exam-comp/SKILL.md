@@ -93,7 +93,7 @@ Then continue at Phase 1 with those targets. One neighbor → `vs-{a}-{b}.md`; t
 3. Web also fails                                   → [UNVERIFIED] label
 ```
 
-Unlike `exam-quiz`, there is **no web fallback cap.** This is a low-frequency skill and a comparison table gets reused
+There is **no web fallback cap.** This is a low-frequency skill and a comparison table gets reused
 for a long time, so accuracy wins.
 
 This is about **filling in targets you already have**, and does not contradict Phase 0-1. Discovering *who* to

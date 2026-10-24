@@ -73,7 +73,7 @@ Record start and end times to report elapsed time. Skip it if the user does not 
 
 Same state updates as a normal session, with these differences:
 
-- Mode in `sessions.md` is `mock` → **counts toward basic_done** (helps unlock weakness mode)
+- Mode in `sessions.md` is `mock` → **counts toward basic_done**
 - There are many mastery rows to touch — apply them **once at the end of the session**, not per batch
 
 ### Log each batch as it is presented

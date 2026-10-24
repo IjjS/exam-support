@@ -99,11 +99,7 @@ Update the matching row in `exams/_registry.md` as well.
 초기화 완료  AWS SAP-C02 (stats)
 백업: state/_archive/2026-08-15-stats/
 오답노트 18건과 노트 23개는 보존됨
-
-진단 모드부터 다시 시작합니다 (0/3회)
 ```
-
-Point out that the session count is back to zero, so **the three-session basic-mode gate applies again.**
 
 ## Never
 

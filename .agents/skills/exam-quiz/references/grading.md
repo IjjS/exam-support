@@ -78,7 +78,7 @@ boundary. If the user names the other option they were weighing, record the pair
 **Print the graded output first, then write.** Every file write placed ahead of the verdicts is dead time for
 someone who has been waiting since they hit send.
 
-**Then issue all six writes as parallel tool calls.** They touch six different files and none reads another's
+**Then issue the writes in the table below as parallel tool calls.** They touch different files and none reads another's
 output. Settle the `W-id` for each new wrongbook entry first — the log delta and the wrongbook row both
 reference it. `sh _spec/wrongbook.sh {slug} next-id` gives the first one; number the rest upward from it.
 
@@ -210,7 +210,6 @@ The question block went in during Phase 3 under `### S12-Q3 — T-034 · …`. T
 
 - With three or more queued topics, always nudge harvest. Thin notes degrade question quality and the tool stops getting used
 - Mention coverage in one line if it moved
-- When `basic_done` reaches 3, say that weakness mode takes over from the next session
 
 
 ## Never, in this phase
