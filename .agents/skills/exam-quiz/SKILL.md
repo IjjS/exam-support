@@ -157,9 +157,9 @@ then verify them through the source pipeline. Do not start from one rare fact an
 ### Source pipeline
 
 ```
-usable note       → generate from the note
-no/exhausted note → Tier C lead → fresh draft → verify against A/B
-no Tier C hit     → model draft → verify against A/B
+usable note        → generate from the note
+no/exhausted note  → search: the exam's _sources/ first, then the web → fresh draft → verify
+nothing found      → model draft → verify
 verification fails → [UNVERIFIED]
 ```
 
@@ -191,15 +191,17 @@ is also the one most in need of varied probing, so leaving it on a spent note is
 **Manual override.** `"웹도 써서"` and `"새로운 각도로"` force this pipeline even when a note is usable.
 `"더 어렵게"` both selects the `harder` ratio and forces this pipeline.
 
-Tier C is a **lead only**: extract the tested service combination, scenario shape, and distractor traps. Never copy its
-wording or trust its answer. Verify the correct answer and every capability, limit, or trade-off that distinguishes an
-option against vendor official docs (A) or a user source (B). Batch searches across selected topics when possible.
+Whatever the search turns up — a past paper in `_sources/`, a past-question site, a blog — supplies the tested
+combination, scenario shape, and distractor traps; never copy its wording or trust its answer. **Verify** the correct
+answer and every capability, limit, or trade-off that distinguishes an option: material from `_sources/` against
+official docs, where one covers it (otherwise the file stands); material from the web against official docs or
+guides. Batch searches across selected topics when possible.
 
 Do not read `_spec/source-policy.md`; the operational rule above is complete. There is no per-session verification cap.
-When A/B verification succeeds, show **no source label**. When it fails, keep `[UNVERIFIED]`.
+When verification succeeds, show **no source label**. When it fails, keep `[UNVERIFIED]`.
 
 Queue no-note topics as `no-note`, exhausted notes as `exhausted`, and failed verification as `unverified-question`.
-Put the A/B verifier URL in `Source`; leave it empty only when verification failed.
+Put the verifier URL in `Source`; leave it empty only when verification failed.
 
 ### Presentation
 
@@ -235,18 +237,18 @@ Heading carries a session-question ref, since no wrongbook ID exists yet:
 A mixed question lists every topic, primary first, comma-separated with no spaces (`T-041,T-005`); domains and
 names follow the same order.
 
-Omit any source label for note-backed or A/B-verified questions; never emit `[WEB]`. After the options, record an
+Omit any source label for note-backed or verified questions; never emit `[WEB]`. After the options, record an
 invisible log-only comment. Use one exact form:
 
 ```html
 <!-- source: note path (updated date) -->
-<!-- source: lead [C] URL · verified [A|B] locator (date) -->
-<!-- source: model · no C lead: "<query>" · verified [A|B] locator (date) -->
-<!-- source: model|lead URL · unverified (date) -->
+<!-- source: found source: file|web: URL · verified web: URL (date) -->
+<!-- source: model · nothing found: "<query>" · verified web: URL (date) -->
+<!-- source: model|web: URL · unverified (date) -->
 ```
 
-The third form is the fallback, and it must carry the search that came up empty. **A missing `no C lead:` field
-means the Tier C step was skipped, not that it found nothing** — the two are indistinguishable otherwise, and
+The third form is the fallback, and it must carry the search that came up empty. **A missing `nothing found:` field
+means the search was skipped, not that it found nothing** — the two are indistinguishable otherwise, and
 skipping it is what turns exam-shaped questions into documentation-shaped ones.
 
 Use `[UNVERIFIED]` visibly only with the fourth form. Verdicts and the `W-id` come later as a short delta.
@@ -394,7 +396,7 @@ bar as real misses would bloat the active list, which quiz reads every session.
 
 ## Source labels
 
-Note-backed and A/B-verified questions have no visible source label. Never use `[WEB]`.
+Note-backed and verified questions have no visible source label. Never use `[WEB]`.
 Use `[UNVERIFIED]` only when the verification step failed; never omit it in that case.
 
 ---

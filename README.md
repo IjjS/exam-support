@@ -407,10 +407,9 @@ Three rules hold this together:
 
 - **Don't work the same exam from two sessions at once.** Last write to the state files wins. (No lock — single-user assumption.)
 - **Without notes, question quality drops.** When you keep seeing `[UNVERIFIED]` tags, it's time to run harvest.
-- **Notes and questions hold to different bars.** A question is generated fresh and thrown away, so it may draw
-  on anything reachable. A note is stored and re-read for months, so it may only be backed by official sources
-  or your own files. Sites like `examtopics.com` are a **lead** — they show what gets tested, then the claim is
-  confirmed against an official source and *that* is what the note cites. Each note records which tiers back it.
+- **Search, then verify.** Notes and questions both start from your own files in `_sources/`, then the web —
+  past-question sites included. Every claim is then checked against official docs or guides before it is used.
+  Each note lists where its material came from: `source:` for your files, `web:` with the URL for everything else.
 - **You'll be told when the exam changes.** If harvest spots a format change while reading official docs, it records it.
   Topic IDs are never reissued, so your accumulated history survives a reorganization.
 
@@ -442,4 +441,4 @@ but do not execute identically.
 | `CLAUDE.md` | Agent operating rules (auto-loaded every session) |
 | `docs/DESIGN.md` | Design rationale, token budget, migration rules |
 | `_spec/error-taxonomy.md` | How the five error types are decided |
-| `_spec/source-policy.md` | What may back a claim, and at which tier |
+| `_spec/source-policy.md` | Where material comes from, and how it is verified |

@@ -66,12 +66,12 @@ the basis.
 ❌  Move the file to _sources/, write `guide_version: 2024`, and build the blueprint from the web
 ```
 
-A citation pointing at a file nobody read is worse than no citation. It defeats the whole A/B/C source tiering:
-the material reads as Tier B when it is really unsourced model knowledge.
+A citation pointing at a file nobody read is worse than no citation: the note looks backed by the user's
+material when it is really unsourced model knowledge.
 
 Record what was actually read:
 
 ```markdown
 ## Sources
-- [B] 유통관리사-출제기준-2024.pdf p.13-18 (2026-08-15, PDFKit 추출)
+- source: 유통관리사-출제기준-2024.pdf p.13-18 (2026-08-15, PDFKit 추출)
 ```

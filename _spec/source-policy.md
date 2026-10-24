@@ -3,166 +3,78 @@
 The policy of record for what may back a claim. Referenced by `exam-init` (Phase 4), `exam-comp`, and `exam-desc`.
 
 **Collecting subagents do not read this file** — they get the operational subset in
-`exam-harvest/references/harvest-policy.md`. This one carries the reasoning, which is what you need when
-*changing* the policy rather than following it.
-
-`exam-quiz` must never read this file either. Its inline rule is enough: C may lead the scenario, but A/B must
-verify the answer. A 2k policy document has no business in the hot path.
-
-Sources are graded A/B/C. **The grade decides what the source may be used for**, not just whether it is allowed.
+`exam-harvest/references/harvest-policy.md`. `exam-quiz` never reads it either; its inline rule is enough.
+This file carries the reasoning, which is what you need when *changing* the policy rather than following it.
 
 ---
 
-## Tier A — Official. Usable for everything
-
-Concept notes, facts, numbers, blueprint, format analysis.
-
-| Vendor / body | Domains |
-|---|---|
-| AWS | `docs.aws.amazon.com` · `aws.amazon.com/certification` · `aws.amazon.com/blogs/architecture` · Well-Architected |
-| Anthropic | `docs.anthropic.com` · `anthropic.com` |
-| Kubernetes / CNCF | `kubernetes.io` · `cncf.io` · `github.com/cncf/curriculum` |
-| HashiCorp | `developer.hashicorp.com` · `hashicorp.com/certification` |
-| 대한상공회의소 | `license.korcham.net` |
-| 한국산업인력공단 | `q-net.or.kr` |
-| 법령 | `law.go.kr` (국가법령정보센터) — the authority for any statute or regulation question |
-| 통계 | `kostat.go.kr` · `kosis.kr` — the authority for any published-statistic question |
-| Domestic exams, general | The administering body's or ministry's official site |
-| General | The product's official docs, official blog, official whitepapers |
-
-Note for domestic exams: the administering body often publishes **only the 출제기준, which is a table of contents,
-not content.** That does not mean Tier A is empty — statutes, regulations, and official statistics have their own
-authoritative sources, and for a subject like 유통관리사 those cover a real share of the exam.
-
-**Caution on Korean institutional sites**: pages are often JS-rendered or session-parameter dependent, and a fetch can
-return content for a *different exam* without erroring. Always sanity-check the fetched subject names, question count,
-and passing rule against the search results. If they disagree, trust neither — ask the user.
-
-## Tier B — User-supplied material. Usable for everything, cite precisely
-
-Anything the user provided: files in `_inbox/` or `exams/{slug}/_sources/`, a path or URL they named, or something
-attached or pasted into the conversation. Official criteria PDFs, textbooks, lecture notes, past-paper collections,
-photographed book pages.
-
-Accepted formats: URL, PDF, MD, TXT, DOCX, XLSX, PPTX, images (PNG/JPG). **HWP cannot be read** — ask for a PDF export.
-
-**Conversation-supplied material must be written to `exams/{slug}/_sources/` before it is cited.**
-A citation pointing at something that only existed in one session is worthless.
-
-- Usable for notes, facts, blueprint, and format analysis
-- Cite as `filename p.42` instead of a URL
-- A commercial textbook is often the **best available knowledge source for a domestic exam.** Do not refuse it
-- If it contradicts Tier A, Tier A wins — and say so in the note
-
-## Tier B (cont.) — Past questions and answer keys from whitelisted sites
-
-| Site | Tier B part |
-|---|---|
-| `comcbt.com` | **Question text, options, and the answer key** |
-
-These are transcriptions of real exams, and a citation like `comcbt 2024년 3회 78번` is **specific and checkable** —
-that is what separates Tier B from model knowledge. For a domestic exam where the administering body publishes no
-content, this is often the only evidence of what is actually tested and which position is correct.
-
-Citation must name the sitting and the question number:
-
-```markdown
-- [B] comcbt 유통관리사2급 2024년 3회 78번 (2026-08-15)
-```
-
-Handle with two cautions:
-
-- Answer keys are **community-reconstructed**, not official — CBT sittings do not publish 확정답안. Page titles on the
-  site openly carry revision notes (`78번 내용 변경 및 해설 수정`), so errors do get found and fixed
-- **Corroborate before treating one as settled.** The same conclusion appearing across two or more sittings is
-  strong; a single question is a lead. Tier A wins any disagreement
-
-## Tier C — A lead, never a source
-
-| Source | |
-|---|---|
-| `examtopics.com` — questions, community answers, discussion | |
-| `comcbt.com` 해설, comments, user commentary | |
-
-Three legitimate uses, all about **what to look at**, never about what is true.
-
-**1. Format analysis.** Stem length, option count, single vs multiple response, how requirement keywords are
-phrased, what a plausible distractor looks like. This is what `exam-init` Phase 4 uses it for.
-
-**2. A lead for harvest.** Tier C shows what actually gets tested. Treat any claim it makes as a hypothesis:
+## The rule — search, then verify
 
 ```
-C says X is the answer   →   confirm X against an A or B source
-                         →   confirmed:      write the note, cite the A/B source that confirmed it
-                         →   not confirmed:  no note. Report it and move on
+1. Search   the exam's _sources/ first (PDFs, past papers, textbooks, lecture notes), then the web
+2. Verify   every claim against official docs or guides
 ```
 
-The note ends up citing the source that did the confirming. **A `[C]` citation never appears in a note.**
+There are no tiers and no site lists. Past-question sites, blogs, community answers, and model knowledge are all
+fine for finding and organizing the material — they show what gets tested. None of them is the reason a claim is
+believed; verification is. It works the same way on every exam, so nothing here is maintained per exam.
 
-**3. A lead for quiz generation.** Questions may use Tier C for the tested combination, scenario shape, and
-distractor traps, but never for truth.
-`exam-quiz` writes fresh wording, then confirms the correct answer and every discriminating claim against A or B.
-Verified questions show no source label; failed verification stays `[UNVERIFIED]`. Questions are archived in the
-cold log but never reused as a knowledge source.
+`_sources/` comes first because it is what the user is actually studying from. The web fills what it does not cover.
 
-### The general rule
+## Verification
 
-The split is by **artifact, not by site.** A single page can be Tier B for one part and Tier C for another —
-`comcbt` is B for its question text and C for its explanation.
+| Found in | Verified when | No official doc or guide covers it |
+|---|---|---|
+| `_sources/` | An official doc confirms it | **The file stands on its own** |
+| The web | An official doc or guide confirms it | Leave it out — queue the topic as `unknown` |
 
-When only a Tier C source supports a claim, do not write the note. Queue the topic as `unknown` and report it.
+When an official doc **contradicts** either one, the official doc wins. Say so in the note.
 
-One legitimate Tier C use: **topic frequency.** A topic recurring across past papers is a real weighting signal.
-Record it as an observation, not as a fact.
+The asymmetry is deliberate. A textbook or past paper the user chose is often the only material a domestic exam
+has; refusing it would leave nothing. A web page nobody vetted earns trust only through an official confirmation.
 
-## Forbidden entirely
+An answer key is a claim like any other — whether it came with a past paper in `_sources/` or from a website.
 
-```
-Any past-question site not named in Tier B or Tier C above
-Personal blogs · Medium · wiki summaries
-AI-generated summary sites
-Unofficial cheat sheets
-```
+**Official** means the vendor's or administering body's own documentation, guides, whitepapers, FAQs, and official
+blog — for any exam, without a per-exam list. Two subjects have an authority of their own: statutes and regulations
+(the government statute database, `law.go.kr` in Korea) and published statistics (the official statistics office,
+`kosis.kr` in Korea). A domestic administering body often publishes only the 출제기준, a table of contents rather
+than content; statutes and statistics still cover a real share of such exams.
 
-No information beats wrong information.
+**Caution on institutional sites**: pages are often JS-rendered or session-dependent, and a fetch can return content
+for a *different exam* without erroring. Sanity-check subject names, question count, and passing rule against the
+search results. If they disagree, trust neither — ask the user.
 
-Tier C entries are whitelisted for format analysis and quiz leads only. Being listed is never permission to treat their
-content or answer as true; A/B verification is the gate.
-
----
-
-## Source recording — no exceptions
-
-Every factual statement in a note has a source, tagged with its tier.
+## Recording — where it came from, nothing more
 
 ```markdown
 ## Sources
-- [A] https://docs.aws.amazon.com/vpc/latest/tgw/... (2026-08-15)
-- [B] 유통관리사2급_기출문제집_2024.pdf p.112 (2026-08-15)
-- [B] comcbt 유통관리사2급 2024년 3회 78번 · 2025년 1회 34번 (2026-08-15)
+- source: 유통관리사2급_기출문제집_2024.pdf p.112 (2026-08-15)
+- web: docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html (2026-08-15)
+- web: examtopics.com/discussions/amazon/view/12345 (2026-08-15)
 ```
 
-- Record the URL or filename **and the date**. Vendor docs change quietly
+- `source:` a file in `_sources/`, with the page. `web:` a URL — the address itself says which site
+- List every page you used, including the one that verified the claim and the one that first pointed you there
+- Record **the date** on each line — vendor docs change quietly
 - Attach a source to each individual number and limit — those change most often
-- Past-question citations name the sitting and question number, and list more than one when they corroborate
-- **Never put a `[C]` citation in a note.** If that is the only source, the note should not exist yet
+- Material handed over in the conversation is saved to `exams/{slug}/_sources/` before it is cited, or the citation
+  points at nothing. **HWP cannot be read** — ask for a PDF export
+- A file or page you could not actually read is never listed
+- Never copy question text, answer explanations, or long passages into a note. Summarize in your own words —
+  copied text invites a copyright problem and gets memorized by wording
 
----
-
-## Precedence
-
-When the same content appears in several places:
+## Which official page to prefer
 
 ```
-1. Official reference docs (docs.*, 출제기준)      — highest accuracy
-2. Official whitepapers / Well-Architected        — judgment criteria and trade-offs
-3. Official FAQ                                   — limits and quotas
-4. User-supplied textbook                         — often the only option for domestic exams
-5. Official blog                                  — new features. Always check the date
+1. Reference docs (docs.*, 출제기준)        — highest accuracy
+2. Whitepapers / Well-Architected / guides  — judgment criteria and trade-offs
+3. FAQ                                      — limits and quotas
+4. Official blog                            — new features. Always check the date
 ```
 
-Exams test **judgment criteria.** Reference docs tell you what something is; whitepapers tell you when to use it.
-Without the latter, scenario questions cannot be written, so collect both.
+Exams test **judgment criteria.** Reference docs tell you what something is; guides and whitepapers tell you when
+to use it. Without the latter, scenario questions cannot be written, so collect both.
 
 ---
 

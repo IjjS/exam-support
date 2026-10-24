@@ -88,7 +88,7 @@ reference it. `sh _spec/wrongbook.sh {slug} next-id` gives the first one; number
 | `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score** / **the angle just used** — **rewrite the whole row**, see below. Refresh the hot block |
 | `state/wrongbook.md` | **Through `_spec/wrongbook.sh` only** — see below. Add one row per `miss` / `lucky` / `shaky`, with its origin **and the question's difficulty in the trailing `Diff` column** (`E`/`M`/`H`). Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md` |
 | `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) **and the session's actual difficulty mix in the trailing `Difficulty` column**, e.g. `E2/M3/H5` |
-| `state/harvest-queue.md` | Queue `no-note`, `exhausted`, and `unverified-question` topics with the A/B verifier URL where one exists, plus `unknown` and `thin-note` cases |
+| `state/harvest-queue.md` | Queue `no-note`, `exhausted`, and `unverified-question` topics with the verifying URL where one exists, plus `unknown` and `thin-note` cases |
 | `exams/_registry.md` | Update this slug's coverage, accuracy, session count |
 | `state/format-drift.md` | **Only when the user disputes a difficulty call this session.** One row, grade `minor`, field `difficulty` |
 

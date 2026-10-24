@@ -5,51 +5,39 @@ The full policy and its reasoning live in `_spec/source-policy.md`; you do not n
 
 ---
 
-## Sources
-
-**Tier A — official.** Backs anything.
+## Sources — search, then verify
 
 ```
-docs.aws.amazon.com · aws.amazon.com/certification · AWS Well-Architected
-docs.anthropic.com · kubernetes.io · cncf.io · developer.hashicorp.com
-license.korcham.net · q-net.or.kr · law.go.kr · kosis.kr
-the product's own docs, official blog, official whitepapers
+1. Search   the exam's _sources/ first — PDFs, past papers, textbooks covering this topic — then the web
+            (past-question sites, blogs, community answers are all fine for finding and organizing)
+2. Verify   every claim against official docs or guides
 ```
 
-**Tier B — user-supplied files** in `_sources/`, and **published past papers with answer keys**. Backs anything.
-Cite a file as `filename p.42`, a past paper as `comcbt 2024년 3회 78번`.
+| Found in | Verified when | No official doc or guide covers it |
+|---|---|---|
+| `_sources/` | An official doc confirms it | The file stands on its own |
+| The web | An official doc or guide confirms it | Leave the claim out and report it |
 
-**Tier C — `examtopics.com`, community explanations, comments.**
-**A lead, never a source.** It tells you what gets tested and how; it does not establish that anything is true.
-
-```
-C says X is the answer   →   confirm X against an A or B source
-                         →   confirmed:  write the note, cite the A/B source
-                         →   not confirmed:  do not write the note, report it
-```
-
-Never put a `[C]` citation in a note.
-
-**Forbidden entirely**: any past-question site not named above, personal blogs, Medium, wiki summaries,
-AI-generated summary sites, unofficial cheat sheets.
-
-**Precedence** when sources disagree: official reference docs → official whitepapers → official FAQ →
-user-supplied textbook → official blog (check the date). Tier A always wins.
+**Official** means the vendor's or administering body's own docs, guides, whitepapers, FAQs, and official blog; for
+statutes the government statute database (`law.go.kr`), for statistics the official statistics office (`kosis.kr`).
+An official doc that **contradicts** what you found wins — say so in the note. An answer key is a claim too: verify it.
+Prefer reference docs → guides and whitepapers → FAQ → official blog (check the date).
 
 ---
 
-## Citation
-
-Every factual statement has one. Record the tier, the locator, and the date.
+## Recording sources — where it came from, nothing more
 
 ```markdown
 ## Sources
-- [A] https://docs.aws.amazon.com/vpc/latest/tgw/... (2026-08-15)
-- [B] 유통관리사2급_기출문제집_2024.pdf p.112 (2026-08-15)
+- source: 유통관리사2급_기출문제집_2024.pdf p.112 (2026-08-15)
+- web: docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html (2026-08-15)
+- web: examtopics.com/discussions/amazon/view/12345 (2026-08-15)
 ```
 
-Attach a source to each individual number or limit — those change most often, and a stale one is worse than none.
-**A file or page you could not actually read must never be cited.** Say so and stop.
+`source:` a file in `_sources/` with its page; `web:` a URL — the address says which site. List every page you used,
+the verifying one included, each with its date. Attach a source to each individual number or limit — those change
+most often, and a stale one is worse than none. **A file or page you could not actually read is never listed.**
+Say so and stop. Never copy question text or explanations into the note; summarize.
 
 ---
 
@@ -67,7 +55,6 @@ topic has earned stays in it.
 id: T-041
 domain: D2
 title: Transit Gateway Routing
-sources: [A]
 updated: 2026-08-15
 ---
 
@@ -103,10 +90,9 @@ controlling transitive routing.
 - `LEAST operational overhead` + many VPCs → almost always TGW
 
 ## Sources
-- [A] https://docs.aws.amazon.com/vpc/latest/tgw/... (2026-08-15)
+- web: docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html (2026-08-15)
 ````
 
-`sources:` in the frontmatter lists the highest tiers backing the note. quiz reads it to know how far to trust it.
 
 ### Which sections are mandatory
 
@@ -142,7 +128,7 @@ Format: `{grade: minor|major, field: "...", observed: "...", source: URL}`
 
 ## Never
 
-- Cite Tier C, or state anything a Tier C source alone told you
+- State a claim that only an unofficial web page supports — it needs an official doc or guide, or it stays out
 - Put practice questions in a note — quiz generates fresh ones, stored ones get memorized by wording
 - Wiki links `[[ ]]` or fold callouts — they render nowhere on a phone, the web, or GitHub
 - Reference another certification's notes

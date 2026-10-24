@@ -22,8 +22,8 @@ and batch count first and get confirmation.
 The purpose of a mock exam is **exam feel and the shape of your weak domains**, not precise verification.
 Generate from mastery's topic names plus `format.md` alone. This differs from weakness mode, which reads five notes.
 
-For each batch, use Tier C only for scenario/trap leads, draft fresh wording, and verify every answer discriminator
-against A/B as defined by the main skill. Batch the lookups. Verified questions carry no source label; failed verification
+For each batch, search the exam's `_sources/` first, then the web, only for scenario and trap shape; draft fresh
+wording, and verify every answer discriminator as defined by the main skill. Batch the lookups. Verified questions carry no source label; failed verification
 keeps `[UNVERIFIED]`.
 
 ## Composition

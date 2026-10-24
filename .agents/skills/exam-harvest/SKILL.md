@@ -50,7 +50,7 @@ A file that could not be read must never be cited as a source.
 
 **Material handed over in the conversation** — if the user attaches or pastes something substantial, save it to
 `exams/{slug}/_sources/` before turning it into notes. Otherwise the note's citation points at something that
-no longer exists. Name it `{topic-or-doctype}-{YYYY-MM-DD}.{ext}` and cite it as `[B] filename p.42`.
+no longer exists. Name it `{topic-or-doctype}-{YYYY-MM-DD}.{ext}` and cite it as `source: filename p.42`.
 
 If what arrives is an exam guide or 출제기준 rather than study material, **do not try to use it here.**
 Notes are harvest's only output. Point the user at `/exam-init --refine` (topics) or `/exam-init --format`
@@ -124,7 +124,7 @@ Do not modify `mastery.md` either — having a note does not raise proficiency.
 ## Never
 
 - **Put practice questions in a note.** Questions are quiz's job, and stored questions get memorized by wording
-- Collect from dump or question-bank sites
+- Write a claim no official doc or guide confirms (a `_sources/` file may stand alone; a web page may not)
 - Omit the source URL or collection date
 - Process more than 10 topics at once (feels like a timeout on a phone)
 - Modify `format.md` directly
