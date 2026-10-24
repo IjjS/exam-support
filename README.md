@@ -453,3 +453,8 @@ but do not execute identically.
 | `docs/DESIGN.md` | Design rationale, token budget, migration rules |
 | `_spec/error-taxonomy.md` | How the five error types are decided |
 | `_spec/source-policy.md` | Where material comes from, and how it is verified |
+
+## License
+
+[MIT](LICENSE). The overall shape started from [bevibing/tutor-skills](https://github.com/bevibing/tutor-skills) (MIT) —
+see `docs/DESIGN.md` §16 for what was kept and what changed.
