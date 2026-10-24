@@ -1,687 +1,410 @@
 # Design notes
 
-Read this before modifying a skill or a state file format. Every decision here has a reason, and most of them involve tokens.
+Read this before modifying a skill or a state file format. Each section states the decision and the reason for it.
+History — how a decision was reached — lives in `docs/HISTORY.md` and git, not here.
 
 ---
 
 ## 1. What problem this solves
 
-The problem is not "review the questions you got wrong." It is **discovering the areas you never encountered.**
+Not "review what you got wrong," but **finding the areas you never encountered.** Accuracy cannot do that: it is
+computed only over what was asked, and multiple choice rewards elimination, so unknown material often scores as
+correct. Three layers address it.
 
-Accuracy-based tracking structurally cannot do this, because accuracy is computed only over the population already asked.
-On top of that, 4- and 5-option questions reward elimination, so a fair share of unknown material comes out correct.
-Hence three layers.
-
-| Layer | Mechanism | Where it lives |
+| Layer | Mechanism | Lives in |
 |---|---|---|
-| 1 | Coverage map (⬜ untested tracking) | topic expansion in `blueprint.md` + coverage in `mastery.md` |
-| 2 | Confidence tags — any hesitation enters the review queue | answer parsing in `exam-quiz` · `mastery.lucky` · `wrongbook.origin` |
-| 3 | Error type classification | `_spec/error-taxonomy.md` |
+| 1 | Coverage map — ⬜ untested topics | topics in `blueprint.md`, coverage in `mastery.md` |
+| 2 | Confidence tags — `?` shaky, `??` guessed | answer parsing in `exam-quiz`, `mastery.lucky`, `wrongbook.origin` |
+| 3 | Error types | `_spec/error-taxonomy.md` |
 
-Layer 2 is the experimental hypothesis of this system, and it does two separate jobs.
+Confidence tags do two separate jobs:
 
-**Scoring**: `??` counts as wrong. That splits surface accuracy (say 62%) from real accuracy (say 48%),
-and the gap is the size of the blind spot.
-
-**Queueing**: `?` *and* `??` both enter the wrongbook, regardless of whether the answer was right.
-The queue asks "would I get this again without hesitating?", which is a lower bar than "did I get it right"
-and a different question from "do I know it." Conflating the two would either punish the score for
-answers that were genuinely correct, or let hesitation go untracked. It does neither.
+- **Scoring** — `??` counts as wrong. Surface accuracy minus real accuracy is the size of the blind spot
+- **Queueing** — `?` and `??` both enter the wrongbook even when correct. The queue asks "would I get this again
+  without hesitating?", a lower bar than "did I get it right." A shaky answer scores as correct and is still revisited
 
 ---
 
-## 1-1. Skill and file responsibility map
+## 2. Who reads and writes what
 
-Before changing any skill, check this. Most bugs in this system come from a skill writing a file it does not own.
+Most bugs here come from a skill writing a file it does not own.
 
 ```
-                    READ                              WRITE
-                    ────────────────────────────      ────────────────────────────
-exam-init           _inbox/ · _sources/ · web         blueprint · format · exam
-                    _template/                        mastery (init) · _active · _registry
-
-exam-harvest        _inbox/ · _sources/ · web         notes/ · notes/_compare/ · _facts
-  └─ subagent       harvest-policy.md · official      the one note file  ← only this
-                    docs                              (never anything under state/)
-                    format.md (limit=14)              harvest-queue · format-drift
-                                                      _registry (own row)
-
-exam-quiz           _active · sessions (limit=15)     mastery · wrongbook · _resolved
-                    mastery · wrongbook · format      sessions · harvest-queue · log/
-                    notes/{5 topics} · web            _active (on switch) · _registry (own row)
-                    grading.md (at Phase 4)
-                    error-taxonomy (only on a miss)
-                    never _spec/source-policy.md
-
-exam-status         _registry  ·  or the full set     nothing   (--rebuild is the one exception)
-                    for the active exam
-
-exam-comp           wrongbook · notes/ · web          notes/_compare/ · wrongbook (notes column)
-
-exam-desc           grep notes/ · mastery row         nothing   (harvest-queue only if the user agrees)
-
-exam-reset          reset-scope.md                    state/*  after copying to _archive/
-                                                      --rm: moves exams/{slug}/ to exams/_archive/
+               READ                                         WRITE
+exam-init      _inbox/ · _sources/ · web · _template/       blueprint · format · exam · mastery (init)
+                                                            _sources/questions/ (bank + index.jsonl)
+                                                            _active · _registry (append) · state/_archive/ (--format)
+exam-harvest   _inbox/ · _sources/ · web · queue            notes/ · notes/_compare/ · _facts.md
+               format.md (limit=14)                         harvest-queue · format-drift · _registry (own row)
+  └ subagent   harvest-policy.md · _sources/ · web          its one note file — never anything under state/
+exam-quiz      _active · sessions (limit=15) · format       mastery · sessions · log/ · harvest-queue
+               mastery · wrongbook (hot block, via script)  wrongbook (via script) · _registry (own row)
+               selected notes · _sources/ · web             _active (on switch) · format-drift (disputed level only)
+               grading.md (after answers) · taxonomy (miss) questions/index.jsonl (source mode: void, key_fix)
+               source mode: bank index window + its Q files
+exam-status    _registry — or, for the active exam:         nothing  (--rebuild rewrites _registry)
+               mastery · sessions · wrongbook hot block
+exam-comp      wrongbook (via script) · notes/ · web        notes/_compare/ · wrongbook notes column (via script)
+                                                            harvest-queue (only after asking)
+exam-desc      notes/ · mastery rows (grep) · web           nothing  (harvest-queue only after asking)
+               log/ (named entry, bounded window)
+exam-reset     reset-scope.md                               state/* after copying to state/_archive/
+                                                            --rm: moves exams/{slug}/ to exams/_archive/
 ```
 
-### Ownership rules these encode
-
-| File | Sole writer | Why it matters |
+| File | Sole writer | Why |
 |---|---|---|
-| `blueprint.md` | `exam-init` | Immutable spec. If quiz could write it, coverage and definition would drift apart |
-| `format.md` | `exam-init --format` | Harvest sees drift first but must not act on it — parallel subagents would corrupt it |
-| `state/log/` | `exam-quiz` (append) | Write-only. The moment anything reads it, session cost starts growing with history |
-| `notes/**` | `exam-harvest`, `exam-comp` | Quiz consumes notes; it never produces them, so questions stay freshly generated |
-| `mastery.md` | `exam-quiz` | Proficiency changes only by being tested. Reading a note does not make you better at it |
+| `blueprint.md` | `exam-init` | Immutable spec. If quiz could write it, definition and coverage would drift apart |
+| `format.md` | `exam-init --format` | Harvest sees drift first, but parallel subagents writing one file would corrupt it |
+| `state/log/` | `exam-quiz`, append only | Anything that reads it every session makes session cost grow with history |
+| `mastery.md` | `exam-quiz` | Proficiency changes only by being tested. Reading a note does not make you better |
+| `_sources/questions/` | `exam-init` | quiz adds only `void` and `key_fix` to index lines it played; the questions themselves never change |
+| topic notes | `exam-harvest` | Quiz consumes notes and never produces them, so questions stay freshly generated |
 
-### Subagent boundary
+**Subagents** (harvest, one per topic) write their note file themselves and return only
+`{topic id, file path, source count, one-line summary, drift observations}`. Two reasons: a returned note body would
+put the prose back into the main context and defeat the fan-out, and several subagents editing `harvest-queue.md`
+at once would corrupt it — only the main session aggregates.
 
-```mermaid
-flowchart LR
-    M["harvest<br/>main session"] -->|"one topic each"| S1["subagent"]
-    M --> S2["subagent"]
-    M --> S3["subagent"]
-    S1 -->|"writes the file itself"| N[("notes/")]
-    S2 --> N
-    S3 --> N
-    S1 -->|"returns a summary only"| M
-    S2 --> M
-    S3 --> M
-    M -->|"aggregates"| Q[("harvest-queue<br/>format-drift")]
-    S1 -.->|"forbidden"| X["state/**"]
-    style X fill:#5f1f1f,color:#fff
-```
+---
 
-The summary a subagent returns is `{topic id, file path, source count, one line, drift observations}` — never prose.
+## 3. Where the tokens go
 
-Two separate reasons for this shape, and both matter:
+Two skills run often. `exam-quiz` is the most frequent and is used from a phone, so it is the hot path.
+`exam-harvest` runs nearly as often and fans out into subagents. The rest are occasional.
+**Any change is judged by what it costs per quiz session, every session, from then on.**
 
-1. **Context isolation** — a subagent returning note bodies would put 6k of prose back into the main context,
-   defeating the entire point of fanning out
-2. **Write safety** — several subagents editing `harvest-queue.md` at once corrupts it. Only the main session aggregates
+### Before the questions appear — measured 2026-10-24 on SAP-C02
 
-## 2. There is exactly one hot path
-
-Of the eight skills, only `exam-quiz` runs at high frequency (1-3 times a day, on a phone). The rest are rare and are not
-optimization targets. **Every optimization argument is settled by asking: does this affect per-session cost of quiz?**
-
-```mermaid
-flowchart LR
-    subgraph hot ["BEFORE THE QUESTIONS APPEAR — ~19k"]
-        direction TB
-        H1["CLAUDE.md 1.5k"]
-        H2["exam-quiz SKILL.md 4.1k"]
-        H3["format.md 2.8k"]
-        H4["mastery.md 3.9k"]
-        H5["sessions limit=15 · 0.1k"]
-        H6["wrongbook 1.2k"]
-        H7["5 notes 6.1k"]
-    end
-    subgraph cond ["CONDITIONAL"]
-        C1["grading.md 1.7k<br/><i>at Phase 4, while the user solves</i>"]
-        C2["error-taxonomy 1.4k<br/><i>only on a miss</i>"]
-        C3["mock-exam.md<br/><i>only on a mock</i>"]
-    end
-    subgraph cold ["COLD — never in a quiz session"]
-        D1["blueprint.md"]
-        D2["state/log/"]
-        D3["_resolved.md"]
-        D4["format-drift.md"]
-        D5["docs/DESIGN.md"]
-        D6["README.md"]
-    end
-    style hot fill:#5f1f1f,color:#fff
-    style cond fill:#5f4a1f,color:#fff
-    style cold fill:#1f3a2f,color:#fff
-```
-
-**Anything moved from COLD to HOT has to justify itself in tokens per session, every session, forever.**
-That is the test a new feature has to pass.
-
-### Per-session token budget — measured 2026-08-18
-
-Two numbers matter, not one. What loads **before the questions appear** is what the user waits through;
-what loads after lands in the window they spend solving.
-
-| Before the questions appear | |
+| Read | Tokens |
 |---|---|
 | CLAUDE.md | 1.5k |
-| exam-quiz SKILL.md (generation rules merged in) | 4.1k |
-| format.md | 2.6k - 2.8k |
-| mastery.md | 3.4k - 3.9k |
-| sessions.md via `Read(limit=15)` | 0.1k |
-| wrongbook.md (active only) | ~1.2k projected |
-| 5 notes | **~6.1k measured** (1.2k each; target 800-1,500) |
-| **Subtotal** | **~19k** |
+| exam-quiz SKILL.md | 5.9k |
+| format.md | 5.8k |
+| mastery.md | 5.0k |
+| sessions.md, `Read(limit=15)` | 0.1k |
+| wrongbook hot block + topic index (`wrongbook.sh index`) | 0.9k |
+| wrongbook rows for the selected topics (`wrongbook.sh rows`) | 0.5-3k |
+| 5 selected notes (median 2.5k, mean 3.6k each) | ~18k |
+| **Total** | **~38-40k** |
 
-| After the questions are out — free window | |
-|---|---|
-| `references/grading.md` at Phase 4 | 1.7k |
-| `_spec/error-taxonomy.md`, only on a miss | 1.4k |
+After the answers arrive: `references/grading.md` 3.1k, and `_spec/error-taxonomy.md` 1.2k only on a miss.
 
-Earlier revisions claimed ~9-10k, then ~16-17k. Each was corrected upward as something got measured rather than
-estimated. The largest remaining item is **notes**: the 28 written so far average **1,217**, so five of them
-cost 6.1k rather than the 3.0k an early estimate assumed.
+### Files are not the largest cost
 
-### Note size — the target is 800-1,500, set from both ends
+Transcripts (Aug-Oct) show a quiz session takes about 21 API calls and ~67k output tokens, and every call
+re-reads the harness baseline — system prompt plus tool definitions, ~50k. A harvest subagent makes about 33 calls
+on the same baseline. So the levers, in order:
 
-The original 400-700 was written before any note existed. Every note actually produced landed above it, which
-usually means the target was wrong rather than the work. The range now has a reason at each end.
+1. **Fewer calls** — batch reads into one shell call, issue independent writes in parallel
+2. **No read that grows** — see §4. This is the one hard rule
+3. Shorter files — worth doing, but a paragraph saved is small next to a call saved
 
-| | Cost per session (×5) | Questions before it runs dry |
-|---|---|---|
-| 600 tokens | 3.0k | 2-3 |
-| **800 — lower bound** | 4.0k | 3-4 |
-| **1,500 — upper bound** | 7.5k | 6-7 |
-| 2,000 tokens | 10.0k | 7-8 |
-
-**Below 800** the note is spent after two or three questions and the topic keeps returning to the queue —
-you pay the collection cost repeatedly instead of once.
-
-**Above 1,500** the cost lands on every session, five times over, buying depth that most topics never use.
-Most are asked once or twice in a study period; only the stubborn few exhaust a note at all.
-
-That asymmetry is why the answer to exhaustion is not "write thicker notes." It is to keep them in range and
-deepen the specific ones that earn it, which is what the `exhausted` queue reason does.
-
-Splitting grading out moved 1.7k off the clock without removing anything.
-
-**No change may introduce a read that grows with session count.** That is still the one hard rule.
-
-### The two heavy items, and whether they are justified
-
-- **`format.md` at 2.8k** — the weight is the two synthetic anchors, each a full exam-length scenario with options.
-  Trimming them is the obvious saving and the wrong one: prose spec alone does not fix the tone, which is the entire
-  reason anchors exist. Cap anchor length at the exam's own stem-word range rather than cutting one.
-- **`mastery.md` at 3.9k** — this one is genuinely open. See below.
+Running a quiz inside a long conversation multiplies everything, because the whole conversation is re-read per call.
 
 ---
 
-## 3. Preventing unbounded growth
+## 4. Preventing unbounded growth
+
+**No change may introduce a read that grows with session count.** Every state file is shaped around this.
 
 ### The wrong-answer lifecycle
 
-This is the state machine that keeps the hot path flat. Everything expensive drains into a file nobody reads.
+| origin | How it enters | Scored as | Retires after |
+|---|---|---|---|
+| `miss` | answered wrong | wrong | 3 confident correct in a row |
+| `lucky` | correct, tagged `??` | wrong | 3 confident correct in a row |
+| `shaky` | correct, tagged `?` | correct | 2 confident correct in a row |
 
-```mermaid
-stateDiagram-v2
-    [*] --> Active: miss — answered wrong
-    [*] --> Active: lucky — correct with ??
-    [*] --> Active: shaky — correct with ?
-    Active --> Active: asked again, uncertain again<br/>repeat +1, streak resets
-    Active --> Streak: confident correct
-    Streak --> Active: any ? or ?? resets it
-    Streak --> Resolved: miss/lucky ×3 · shaky ×2
-    Resolved --> Active: resurfaces later
-    Resolved --> [*]
+Any `?` or `??` resets the streak. A retired entry moves to `_resolved.md`, which quiz never reads; if the topic
+fails again, it returns to the wrongbook with its history. `shaky` retires faster because its evidence of
+not-knowing is weaker. A question that spans several topics gets one entry per topic, each on its own streak, so a
+topic that only fails in combination stays in the book after its partner clears.
 
-    note right of Active
-        one line, ~25 tokens
-        read every session
-    end note
-    note right of Resolved
-        _resolved.md
-        never read by quiz
-    end note
-```
+### The wrongbook is never read whole
 
-Three origins enter the same queue but carry different weight. `lucky` is scored as a wrong answer because a guess
-that landed is not knowledge. `shaky` is scored as **correct** — it was correct — yet still queued, because
-narrowing to two and winning the coin flip is not the same as knowing. Only the review queue treats them alike;
-the score does not.
+Entries accumulate faster than they retire — 341 active at session 56, about 37k tokens as a full read. So no skill
+loads the table. `_spec/wrongbook.sh` answers the narrow questions instead:
 
-`shaky` retires after two confident answers rather than three. The evidence of not-knowing is weaker, and holding
-it to the same bar would inflate the one file quiz reads on every single session.
+| Need | Command | Size |
+|---|---|---|
+| Which topics have active entries | `index` | one line per topic — bounded by the topic count |
+| The entries behind the selected topics | `rows T-041 …` | only those topics |
+| A new W-id, a write, a retirement | `next-id` · `add` · `set` · `retire` · `keywords` | output is one line |
 
-Full question text goes to `state/log/{YYYY-MM}.md` at the moment of grading and is never read **in the loop**.
-That single decision is what separates a constant-cost system from one that gets slower every week.
-(`exam-desc` can retrieve one entry on request — see below.)
-
-### wrongbook split three ways
-
-An AWS SAP stem runs 100-150 words. Storing a wrong answer with full question text, options, and explanation costs about
-450 tokens. A hundred of those is 45k — you would be reading 45k to get five questions.
-
-```
-state/wrongbook.md      Active wrong-answer index (one line ≈ 25 tokens) — quiz reads this
-state/_resolved.md      Retired entries — quiz does not read it
-state/log/{YYYY-MM}.md  Full question text and per-option verdicts — quiz never reads it
-```
-
-Active entries leave the index when resolved, so the realistic ceiling is 30-60 entries.
+Writes go through the script as whole rows: it rejects a row whose cell count differs from the header, refuses a
+duplicate or unknown W-id, and recomputes the hot block itself. The table stays the single source of truth — there
+is no derived cache to drift from it.
 
 ### The log is archival, not sealed
 
-"Write-only" is a rule about the **loop**, not a prohibition. What must never happen is a per-session read that
-grows with history. A one-off lookup the user explicitly asked for costs nothing per session.
+Full question text goes to `state/log/{YYYY-MM}.md`. The question block is written while the user is solving
+(heading `S12-Q3 — T-034 · …`); the result line with the `W-id` is appended after grading. quiz never reads the log.
+`exam-desc` may, for one entry the user named: grep the W-id, then read a bounded window starting about 30 lines
+above the match, since the W-id sits below its question. **Reading a log file without an offset and a limit is
+forbidden.** The path exists for `misread` errors, where the wording of the stem is the lesson.
 
-So `exam-desc` may open the log for a named entry. Two things make that safe:
+### Hot blocks
 
-- **Log headings carry the wrongbook ID** — `### Q3 — W-001 · T-034 · …`. quiz already knows the ID when it
-  writes the row, so the anchor is free. Lookup becomes `grep -n` plus a 40-line window: an index hit, not a scan
-- **Reading a log file without an offset and a limit is forbidden**, in the skill and here
+Aggregates sit in the first 15 lines of each state file and are read with `Read(limit=N)`. Mode gating needs one
+number from `sessions.md`; it never loads the session log below it. When designing a file, first ask whether the
+values a hot path needs sit in those lines.
 
-Why bother: the wrongbook's one-line core answers "what concept did I get wrong," which is usually enough.
-It cannot answer "what did the question actually say" — and for `misread` errors, the wording of the stem
-*is* the lesson. That is the case this path exists for.
+### Notes accumulate
 
-### Hot block on top + `Read(limit=N)`
+A note has a floor of 800 tokens — below it, a topic runs dry after two or three questions and keeps returning to the
+queue — and **no ceiling**. A note is accumulated knowledge, and depth a topic has earned stays in it. What keeps the
+cost bounded is the read rule: quiz reads only the selected topics' notes, never a section's worth.
 
-Mode gating needs exactly one number from `sessions.md`: how many basic-mode sessions are done.
-Put the aggregates in the top four lines and cut the read at `Read(limit=15)` so the log is never loaded.
+A note supports a finite number of distinct questions. When `mastery.Att >= 4` and the note has not been updated
+since, quiz uses the source pipeline for that question and queues the topic as `exhausted` — harvest extends the
+note rather than rewriting it. A single threshold fires early for a deep note, and early is the safe direction.
 
-Apply this to every state file. **When designing a file, first ask whether the hot path's values sit in the first 15 lines.**
+### Mock exams
 
-### Mock exam batching
+Generated in batches of 10, carrying only `{correct count, per-domain score, elapsed time}` between batches. Earlier stems are
+discarded; one 65-question context is expensive and visibly degrades the later questions.
 
-Generating 65 questions in one context costs 13k output plus 39k input, and later questions visibly degrade.
-Split into batches of 10 and carry only `{correct count, per-domain score}` across batches. Discard earlier stems.
-
----
-
-## 4. Optimizations deliberately skipped
-
-Over-optimizing only adds consistency risk. These were considered and **intentionally not done**.
+### Considered and skipped
 
 | Item | Why not |
 |---|---|
-| ~~TOP-N cache in `mastery.md`~~ | **Reopened — the premise was wrong.** This was rejected on an estimate of 1.4k. The measured figure is **3.9k**, about a quarter of the whole session. See "Open question" below |
-| Batching the per-session Edit calls | Ten of them total ~300 tokens. An append-only log would cost more in re-aggregation |
-| Removing `_template/` | One `cp -r _template/exam exams/{slug}` creates six files **without reading the template**. It saves tokens |
-| Session lock | Single user. Instead quiz warns if `sessions.md` was modified within 5 minutes |
-| git / scheduled reminders / push | User decided against them. Add later if needed |
+| Removing `_template/` | `cp -r` creates the whole exam tree without reading the template — it saves tokens |
+| Session lock | Single user. quiz warns if `sessions.md` changed within 5 minutes |
+| git, reminders, push | The user decided against them |
 
-### Open question — a hot block for `mastery.md`
-
-At 3.9k it is the single largest runtime read, and quiz does not actually need all of it:
-
-- **Weakness mode** needs the top ~15 rows by score, to choose 5
-- **Basic mode** needs the ⬜ list and the per-domain counts
-- Everything else in the table is only touched at write time
-
-A hot block carrying the top-20 by score plus per-domain ⬜ counts would be roughly 0.4k, saving ~3.5k —
-about 22% of the session. The cost is the usual one: derived data can drift from the table it summarizes.
-
-Unlike the version of this decision recorded above, the saving is now large enough to be worth the drift risk.
-Not implemented; decide before the note corpus grows, because quiz's write path changes with it.
+**Open**: `mastery.md` is read whole (5.0k) though quiz needs only the top scores and the ⬜ list. A hot block for
+those would save most of it, at the cost of derived data that can drift from the table.
 
 ---
 
 ## 5. Topic IDs — the one thing that cannot be repaired
 
-**Format `T-041`. Sequential. The domain is not encoded.**
-
-The first draft used `T-D2-07` with a domain prefix. When domains are reorganized, the prefix and the actual
-membership diverge. Fixing the prefix breaks the join key in `mastery.md` and destroys the accumulated history.
-So the ID is a meaningless serial number and the domain lives in its own column.
-
-### Migration rules when the exam is reorganized
+**`T-041`, sequential, with no section encoded.** A section prefix diverges from real membership the first time the
+exam is reorganized, and fixing the prefix breaks the join key in `mastery.md` and the wrongbook — destroying history.
 
 ```
-Domain reorganized  → keep the ID, change only the domain column in blueprint
-Topic removed       → status: deprecated (never delete the row; history is preserved, only questions are excluded)
-Topic added         → issue a new ID from topic_id_next (never roll the counter back)
-Weights changed     → blueprint only; mastery is unaffected
+Section reorganized  → keep the ID, change only the section column in blueprint
+Topic removed        → status: deprecated (never delete the row; history stays, the topic leaves the question pool)
+Topic added          → issue a new ID from topic_id_next (never roll the counter back)
+Weights changed      → blueprint only; mastery is unaffected
 ```
-
-Rolling back `topic_id_next` in `blueprint.md` gives two different topics the same ID. Never do it.
 
 ---
 
-## 5-1. Not every exam has domains
+## 6. Not every exam has domains
 
-The first draft assumed a vendor-style structure: named domains with published percentages. That assumption
-was baked into topic selection, harvest priority, the notes directory, and the blueprint schema — and it breaks
-on exams that simply do not work that way.
-
-`blueprint.md` now records what the exam actually is:
+`blueprint.md` records the exam's real shape, found in init Phase 3 rather than assumed.
 
 | `structure` | Shape | Weight from |
 |---|---|---|
-| `weighted` | Named domains with published percentages — AWS, most vendor exams | the published % |
-| `counted` | Subjects with a fixed question count each — Korean national certifications | count ÷ total |
+| `weighted` | Named domains with published percentages — most vendor exams | the published % |
+| `counted` | Subjects with a fixed question count — Korean national certifications | count ÷ total |
 | `flat` | One curriculum, no grouping | nothing; every topic is equal |
 
-`section_label` holds the exam's own word for the grouping — `domain`, `과목`, `area`. The system says *section*
-internally; the label is what the user sees.
-
-**`flat` is a legitimate finding, not a failed search.** Forcing a structure onto an exam that has none invents
-weights, and invented weights distort every allocation downstream — question spread, harvest priority, coverage
-reporting. Discovering the real shape is the reason init's Phase 2 exists.
-
-What falls back under `flat`: notes go to `notes/{topic}.md` instead of `notes/{section}/{topic}.md`, the
-mastery section column stays empty, and question spread uses topic-ID distance instead of section share.
-
-Deeper hierarchies flatten. A three-level 출제기준 maps 주요항목 → section and 세세항목 → topic, and the middle
-level is dropped: useful while breaking topics down, noise once they exist.
-
-## 6. format.md — compress the samples and keep them resident
-
-Format differs between exams from the same vendor. AWS SAA is mostly single-select; SAP has a distinctly higher share of
-multiple-response. Without knowing the format you keep producing questions that look plausible but don't match the real
-exam, and no amount of practice on those prepares you.
-
-Keeping the original samples resident is expensive. So **discard the content and extract only the format.**
-
-| | Reuse value | Handling |
-|---|---|---|
-| Content (which service is the answer) | Low — that question won't be asked again | Read once during init, then discarded |
-| Format (type mix, stem length, phrasing, distractors, difficulty) | High — applies to every question | Compressed into `format.md`, resident |
-
-### Anchors are synthesized, not copied
-
-Prose spec alone doesn't fix the tone, so two few-shot anchors are kept. But official sample text is never pasted in.
-
-- It avoids the copyright question
-- Pasting originals biases the model toward those topics
-
-init reads the samples and **writes fresh examples in the same format on different subjects.**
-Anchors are fixed to different domains and different types (one single-select, one multiple-response).
-
-### Difficulty belongs to the exam
-
-init classifies samples by reasoning depth and writes a compact E/M/H rubric plus per-mode ratios to `format.md`.
-quiz owns no global difficulty definition. Multiple-response is a response format, never difficulty evidence; hard
-requires multi-step judgment with competing viable designs and conflicting requirements. Missing difficulty metadata
-is a format migration error, not permission for quiz to invent a fallback.
-
-### Performance-exam switch
-
-CKA/CKAD are hands-on, not multiple choice. `format_type: mcq | performance` marks the branch point.
-Under `performance`, quiz renders "write the command / write the manifest" and grades against a reference answer.
-Only the switch exists today; there is no implementation. It is there so adding K8s doesn't require restructuring the skills.
+`flat` is a finding, not a failed search: inventing weights would distort question spread, harvest priority, and
+coverage. Under `flat`, notes go to `notes/{topic}.md`, the section column stays empty, and question spread uses
+topic-ID distance. `section_label` keeps the exam's own word (`domain`, `과목`). A three-level 출제기준 maps
+주요항목 → section and 세세항목 → topic; the middle level is dropped once topics exist.
 
 ---
 
-## 7. Format drift
+## 7. Past questions — the best input, and a bank
 
-Vendors revise exams (SAP-C02 → C03, curriculum updates). Harvest reads official docs, so it meets the change first.
+Past questions are the only material that shows the real exam rather than describing it. init asks for them before
+anything else — once, as a numbered choice (add files / collect from the web / go on without), never blocking — and
+turns them into a bank:
 
-### Detection
-
-Read only the compact DRIFT-CHECK block at the top of `format.md` via `Read(limit=14)` and compare against what the web
-showed. No extra web calls, about 180 tokens.
-
-### Severity
-
-| Grade | Condition | Action |
-|---|---|---|
-| minor | Wording changes, samples added, verified_at aging | Non-blocking. Append to `format-drift.md` and continue. One-line report at the end |
-| major | Exam code, domain reorganization, weight change, question count or time change | Finish the current batch, then stop |
-
-Stopping on major is not politeness — it **avoids wasted work writing notes for topics about to disappear.**
-
-### Update path
-
-Harvest runs subagents in parallel, so several agents editing `format.md` at once would corrupt it.
-Observation and application are deliberately different actors.
-
-```mermaid
-sequenceDiagram
-    participant S as subagent
-    participant H as harvest (main)
-    participant D as format-drift.md
-    participant U as user
-    participant I as exam-init --format
-    participant F as format.md
-
-    S->>H: {grade, field, observed, source}
-    Note over S,H: observation only —<br/>never writes a file
-    H->>D: append
-    alt minor
-        H->>H: keep collecting
-        H->>U: one line at session end
-    else major
-        H->>H: finish current batch, stop
-        H->>U: "SAP-C03 detected — run /exam-init --format"
-    end
-    U->>I: runs it explicitly
-    I->>F: replace format.md
-    I->>D: mark entries applied (v4.2)
+```
+_sources/questions/Q001.md …   stem and options verbatim, the key as given — no explanations stored
+_sources/questions/index.jsonl one line per question: answer · topics · level · recall · void · key_fix
 ```
 
-### Version stamp
+The bank feeds three things:
 
-Each row of `sessions.md` carries `fmt:4.1`. When accuracy drops after a format change, being unable to tell
-skill from format makes the data uninterpretable.
+- **Topics** — every question is mapped to its load-bearing topics, and the mapping corrects the topic list before
+  anything depends on it: questions that fit nowhere are a missing topic, a crowded topic is too coarse, a topic with
+  no question is kept (the guide covers it) and reported as unexamined. Topics drawn from a guide's prose alone drift
+  from what is actually asked
+- **format.md** — difficulty, topic mixing, and distractor patterns are calibrated on the bank, and each question's
+  level is written into its index line
+- **Source mode** — quiz presents the bank in order, as written, from a cursor in the `sessions.md` hot block
+
+Source mode generates nothing, so it needs no notes up front: it reads a window of the index and the batch's question
+files, never the whole bank. Each question is recorded on the topics the index lists. The key is a claim — it is
+verified only where the grade depends on it (the user disagreed with it, or tagged `?`/`??`). A key an official doc
+overturns is corrected in the index (`key_fix`); an item with two defensible answers is voided (`void`) and never
+asked again. Source sessions do not count toward `basic_done`, which measures generated sessions.
+
+The index is the bank's only metadata, kept as JSONL so one question is one line — a read of the next twenty is a
+bounded window, and an edit touches one line.
 
 ---
 
-## 8. Mode gating
+## 8. format.md — the exam's spec, resident
 
-Basic mode is the default forever. Weakness mode is opt-in, never automatic.
+Format differs even between exams from one vendor, and questions in the wrong format do not prepare anyone for the
+real one. Keeping samples resident would be expensive, so init **reads them once and keeps only the format**: what a
+question looks like, not which answer a past question had.
 
-```
-basic_done = (diagnostic + mock) sessions in sessions.md
+format.md is generated by init and changed only by `/exam-init --format`, which archives the previous version to
+`state/_archive/` first. It carries everything exam-specific that quiz executes:
 
-no weakness request                        →  basic mode
-user asked for weakness, basic_done >= 3   →  weakness mode
-user asked for weakness, basic_done < 3    →  run basic mode anyway, and say so
-                                              allow one override if the user asks again
-```
+- type mix, stem length, question phrasings, requirement keywords, prohibitions
+- `angles:` — the axis this exam varies along, with its real distribution
+- `topic_mix:` — the share of questions whose answer turns on two or more topics
+- the difficulty rubric, the tests that confirm each level, the conditions that void an item, and per-mode ratios
+- distractor patterns
+- two synthesized anchors
 
-Two separate reasons, and they are often confused:
+**Difficulty belongs to the exam.** quiz owns no level definition — a rule written into quiz would silently become
+every exam's rule. Levels are calibrated on real past questions, not the official sample set, which is a showcase
+balanced by design. The SAP-C02 rubric measures the length of the dependent chain of inferences the solver must derive
+with every product fact supplied; unfamiliar facts are tracked as a separate recall-load axis, not as depth. quiz owns
+only exam-neutral procedure: draft the level's trace before choosing a topic, classify after the options exist, keep
+the honest lower label, and lift a weak topic by chaining it into a secondary rather than swapping it out — at most
+twice per topic.
 
-- **The `< 3` gate** is about sample size. Weakness mode sorts by a score built from attempts; with one or two
-  sessions there is nothing to sort. It only ever applies to a request the user actually made.
-- **Basic staying the default** is about coverage. Basic mode prioritizes ⬜ untested topics, and coverage is the
-  long pole — a 123-topic blueprint needs a dozen-plus sessions before the map is filled in. Flipping to weakness
-  mode automatically at three sessions freezes coverage at whatever ~30 topics happened to come up and then drills
-  that set forever, which is exactly the blind spot this repo exists to prevent. Narrowing to known weaknesses is a
-  deliberate act, so the user asks for it.
+**Topic mixing** is measured on the same real questions. A mixed question is recorded on every topic it lists, since
+a solved question is not topic coverage; question-level aggregates still count it once. Secondaries come from the
+session's already-open notes, so mixing adds at most one note read.
 
-### Difficulty has no feedback loop — record it
+**Distractor patterns are per exam**, derived from the real questions, with IDs `P1`, `P2`, … — `D` would collide
+with section IDs. There is no shared list; grading and the wrongbook name patterns by these IDs. (SAP-C02's
+format.md predates this and uses `D1-D10`.)
 
-Every other quality signal quiz produces gets written somewhere that can be checked later. Coverage and accuracy
-land in `mastery.md`, the angle lands on the topic row, wrong answers land in the wrongbook with a type. Difficulty
-did not: quiz decided it, wrote it into the log heading, and nothing ever read it back. `mastery.md` has no
-difficulty column, `sessions.md` had none, and no read-only skill referenced it.
+**Anchors are synthesized, never copied** — on different subjects, one single-select and one multiple-response, in
+different sections. Pasting originals invites a copyright problem and biases generation toward those topics.
 
-That makes difficulty the one field where the model grades its own homework with no later contradiction. The
-failure is not exotic — the ratio in `format.md` is satisfiable at planning time by labelling, while the rubric can
-only be checked after the questions exist. Fill the quota, label to match, skip the second pass, and the session
-reports `E2/M3/H5` while actually being `E5/M3/H2`. Observed 2026-08-19, S4.
-
-So both files now carry it:
-
-```
-sessions.Difficulty   the session's ACTUAL mix, e.g. E2/M3/H5
-wrongbook.Diff        E | M | H for the question behind the entry
-```
-
-`sessions` makes drift visible across sessions. `wrongbook` separates "failing hard questions" from "failing easy
-ones", which call for different responses — the first is normal, the second is a gap.
-
-Store the actual mix, never the target. Recording the target makes the two agree by construction and re-creates the
-blind spot in a column that looks like it fixed it.
-
-**Both are trailing columns, and every later column must be too.** Rows written before the column existed stay
-short and markdown renders the gap as empty, so no migration is needed and no historical row has to be invented.
-Reordering columns instead would mean rewriting every historical row, which is how a state file loses data.
-
-### Weakness score
-
-```
-(1 - accuracy) × 3  +  lucky_rate × 2  +  shaky_rate × 1  +  domain_weight  +  staleness
-```
-
-⬜ untested ranks first in basic mode. quiz writes the score into the `mastery.md` row after grading,
-so the next session only has to sort — no full recomputation.
+**Performance exams** (CKA/CKAD) set `format_type: performance`; quiz then asks for commands or manifests and grades
+against a reference answer. Only the switch exists today.
 
 ---
 
-## 8-1. Latency after the answer is submitted
+## 9. Format drift
 
-Measured on Codex: **2m30s** between submitting five answers and seeing the grade. The work itself was not the
-problem — the ordering was.
+Vendors revise exams. Harvest reads official docs, so it meets the change first.
 
-Everything ran before the user saw anything: grade, write the full question text to the log, update mastery,
-wrongbook, sessions, the harvest queue, the registry, then finally print the result. One session's log block
-measured **2,174 tokens**, all of it emitted while the user stared at a spinner waiting for a score.
+- **Detection** — harvest reads only the DRIFT-CHECK block at the top of format.md (`Read(limit=14)`) and compares it
+  with what the docs show. No extra web calls
+- **minor** (wording, new samples, `verified_at` aging) — append to `format-drift.md`, keep going, one line at the end
+- **major** (exam code, section reorganization, weights, question count or duration) — finish the batch, then stop,
+  so no notes are written for topics about to disappear
+- **Applying** — only `/exam-init --format`, run by the user, which marks the entries `applied`. Observation and
+  application are different actors because harvest runs subagents in parallel
 
-Three changes, in order of how much they save:
+quiz also appends a row when the user disputes a difficulty call: the user is calibrating the exam's criteria, and
+quiz cannot edit format.md. Each `sessions.md` row carries the format version it ran under, so a drop in accuracy can
+be told apart from a format change.
 
-### Write the questions to the log during thinking time
+---
 
-The question text is known the moment the questions are presented. Writing it then costs the user nothing —
-they are about to spend minutes solving. Writing it after they submit puts 2,000 tokens directly in front of the
-answer they are waiting for.
-
-Phase 3 writes the question block. Phase 5 appends a short result line. Roughly **2,000 tokens leave the
-critical path** and land in time the user was spending anyway.
-
-This costs one thing: the wrongbook ID does not exist yet at presentation time, so the log heading uses a
-session-question ref (`S12-Q3`) and the `W-id` arrives on the result line below the question. Lookups therefore
-read a window that starts *above* the grep match.
-
-### Print the result before touching any file
-
-The verdicts are what the user is waiting for. Any write placed ahead of them is dead time. Emit the graded
-output as text, then write — the user reads while the files update.
-
-### Issue the six writes in parallel
-
-They touch six different files and none reads another's output, so sequencing them multiplies the wait for
-nothing. The only thing to settle first is the `W-id`, which is a decision rather than a file read.
-
-### Result
-
-| | Before | After |
-|---|---|---|
-| Emitted before the user sees a grade | ~3,360 tokens | **~400**, streamed |
-| Emitted after | — | ~890, parallel |
-| Log write | post-answer, 2,174 | pre-answer, off the clock |
-
-Nothing was removed. The same records get written; they are just no longer standing between the user and
-their score.
-
-## 8-2. Angle — one facet is not the topic
-
-Three correct answers on a topic from the same angle is mastery of a facet. A 🟦 earned entirely through
-`cost` says nothing about whether the same service is understood under `resilient`, and nothing was recording
-which angle had been used.
-
-`mastery.Angle` holds one code, the most recent. The vocabulary is per-exam and lives in `format.md` as
-`angles:` — requirement keywords for a scenario-heavy paper, question types otherwise. Explicit rather than
-free-form, because `cost` / `cost-effective` / `비용` drift apart and stop being comparable across sessions.
-
-Two constraints keep it from doing harm:
-
-- **The exam's distribution wins.** If a paper is 60% cost-framed, chasing variety trains against the real thing.
-  Angle difference breaks ties inside the distribution; it never reshapes the mix
-- **One code, last-used only.** Attempts per topic run 1-3, so a full histogram would cost tokens to record
-  resolution nobody uses
-
-Empty `angles:` means no constraint, which is the right behaviour for an exam whose samples showed no
-consistent axis.
-
-## 9. Question source pipeline
+## 10. Mode and topic selection
 
 ```
-usable note       → generate from the note
-no/exhausted note → Tier C lead → fresh draft → A/B verification
-no Tier C hit     → model draft → A/B verification
+basic_done = (diagnostic + mock) sessions
+
+no weakness request                      → basic mode
+weakness requested, basic_done >= 3      → weakness mode
+weakness requested, basic_done < 3       → basic mode, said once; one override allowed
+```
+
+- **Basic is the default at every session count.** It prioritizes ⬜ untested topics, and coverage is the long pole;
+  switching automatically would freeze coverage at whatever came up first and drill that set forever
+- **The `< 3` gate** is about sample size: weakness mode sorts by a score built from attempts
+- **Source mode** (§7) is outside this scheme: it follows the bank's order, and none of the spread, angle, or
+  difficulty-ratio rules below apply to it
+- **Spread is a share, not a count.** Basic follows the blueprint weights by largest remainder; weakness caps one
+  section at 60% of the session. While coverage is 80% or below, re-asking active entries is capped at 40%
+- **Weakness score** — `(1 - accuracy) × 3 + lucky_rate × 2 + shaky_rate × 1 + domain_weight + staleness`, written
+  onto the mastery row after grading so the next session only sorts
+- **Angle** — `mastery.Angle` keeps the last-used code from format.md's `angles:`. A recurring topic prefers a
+  different angle, but only to break ties inside the exam's real distribution; one facet is not the topic
+
+**Difficulty is recorded as asked, never as targeted** — `sessions.Difficulty` holds the actual mix and
+`wrongbook.Diff` the level behind each entry. Recording the target would make the two agree by construction. Both
+are trailing columns: older rows stay short and render empty, so no row is ever backfilled or reordered.
+
+---
+
+## 11. Latency after the answer is submitted
+
+The user is waiting for verdicts; nothing should stand in front of them.
+
+- **The question block goes to the log when the questions are presented**, during solving time. Only a short result
+  line is written after grading
+- **Verdicts are printed before any file is written**
+- **The writes go out as parallel calls** — they touch different files and none reads another's output
+
+Speed must not come from narrow edits. A mastery row is rewritten whole and checked with one `awk` for cell count
+and the trailing pipe: a span edit that starts one cell off shifts every column to its right, and nothing errors when
+it happens. Wrongbook writes get the same guarantee from `wrongbook.sh`.
+
+---
+
+## 12. Sources — search, then verify
+
+```
+usable note        → generate from the note
+no/exhausted note  → search: _sources/ first, then the web → fresh draft → verify
+nothing found      → model draft → verify
 verification fails → [UNVERIFIED]
 ```
 
-Tier C supplies only tested combinations, scenario shapes, and traps. It never establishes the answer. Every capability,
-limit, and trade-off that distinguishes an option is confirmed against A or B. Batch searches across topics to limit
-round trips. There is no per-session verification cap; this intentionally trades some early-session latency for accuracy.
+One rule for notes and questions alike, and no tiers or site lists to maintain per exam. Anything the search turns
+up — past papers, past-question sites, blogs — may shape a scenario or point at a fact. Only verification makes it
+true: material from `_sources/` against official docs (a file with no official coverage stands on its own, since a
+domestic exam's textbook is often all there is), material from the web against official docs or guides. Batch
+searches across topics; there is no per-session verification cap.
 
-Verified questions carry no visible source label and never use `[WEB]`; the cold log records lead, verifier, and date in
-an invisible comment. Failed verification remains `[UNVERIFIED]`. Queue no-note topics with the verifier URL so harvest
-can create the durable note without repeating discovery.
+Sources are recorded as where they came from, nothing more: `source: file p.N` or `web: URL`, each dated, the
+verifying page included. Verified questions carry no visible label; the cold log keeps the search and the verifier
+in an invisible comment. `harvest-queue.md` carries the verifying URL in its `Source` column, so harvest starts there
+instead of searching again.
 
-### What may back a note, versus a question
+---
 
-The two hold to different bars, and the reason is storage.
+## 13. The non-technical risk
 
-| | Question | Note |
+**The harvest doom loop**: harvest is not run → notes stay thin → more unverified questions → quality and speed
+drop → it is run even less. Two mitigations: quiz nudges at session end when three or more topics are queued, and
+`/exam-harvest 3` is a two-minute batch — short enough to become a habit.
+
+**Init friction**: init asks about sources once and never again, and a missing exam guide must not block
+registration either. Rough out the sections, start, and refine later with `/exam-init --refine`; past questions found
+later go in with `--bank`.
+
+---
+
+## 14. Three documents, split by load frequency
+
+| File | Audience | Loaded |
 |---|---|---|
-| Lifetime | generated fresh; cold archive only | stored, re-read for months |
-| May draw on | C lead, **A/B-verified answer** | **A or B only** |
+| `README.md` | Human | Never |
+| `CLAUDE.md` | Agent | Every session, automatically — **1.5k ceiling** (measured 1,491) |
+| `docs/DESIGN.md` | Agent | Only when modifying skills |
 
-Tier C — `examtopics.com`, community explanations — is **a lead, never a citation**. It shows what gets tested;
-confirm the claim against an A or B source and cite whatever confirmed it. A `[C]` citation never appears in a note.
-
-Notes carry `sources: [A, B]` in frontmatter so quiz can see how far to trust one without opening the citations.
-
-`harvest-queue.md` carries a `Source` column: whichever skill paid to find and verify a page records its URL
-there, and harvest starts from it instead of searching again. quiz fills it at tier 2; comp and desc offer to,
-but only when a fetch actually happened and only after asking.
+CLAUDE.md holds the *what*; this file holds the *why*. Every part of CLAUDE.md is load-bearing — the absolute rules,
+the routing table, the file-role map, write permissions — so a push past 1.5k is a signal to move something into a
+skill, not a budget to spend. `AGENTS.md` is a symlink to it, for other agents.
 
 ---
 
-## 10. The non-technical bottleneck, which is the real risk
+## 15. Instruction language
 
-**The harvest doom loop**: harvest doesn't get run → notes stay thin → unverified questions increase →
-quality and speed drop → it gets run even less.
+Instruction files are English. Hangul is tokenized character by character, and this repo's Korean prose expanded
+about 2.79× in characters when translated, so English saves roughly 20-45% on the hot path; it also carries
+conditional procedure and imperative strength (`must never` vs `avoid`) more reliably.
 
-Two mitigations are baked into the skills.
-
-1. quiz surfaces the queue backlog at session end and nudges — `"큐 7개. /exam-harvest 3 (약 2분)"`
-2. harvest has a small-batch mode — `/exam-harvest 3` handles three queue entries. **Two minutes on a phone is what makes it a habit**
-
-**init friction**: if the exam guide can't be found, registration itself is blocked.
-→ Fast-start path. Rough out the domains, start, and refine later with `/exam-init --refine`.
+- **Trigger phrases** in skill descriptions stay Korean — they are matched against what the user actually types
+- **The user is addressed in their own language**, whatever the instruction language
+- **Question language follows the exam**, set by the anchors in format.md
 
 ---
 
-## 11. Three documents, split by load frequency
+## 16. Origin
 
-`CLAUDE.md` is **auto-loaded into every session**. It rides along on every quiz run from a phone.
-
-| File | Audience | Loaded | Constraint |
-|---|---|---|---|
-| `README.md` | Human | Never | Free |
-| `CLAUDE.md` | Agent | Every session, automatically | **~1.5k ceiling** (measured 1,475) |
-| `docs/DESIGN.md` | Agent | Only when modifying skills | Free |
-
-Putting design rationale in CLAUDE.md would hand back every optimization recorded here.
-**CLAUDE.md holds the "what"; the "why" lives in this file.**
-
-The ceiling was originally written as ~700, which was a number invented before anything had been measured.
-The file has since settled at 1,475, and every part of it is load-bearing: seven absolute rules, the routing
-table, the file-role map, and write permissions. Cutting to 700 would mean dropping the file-role map (~400),
-which a directory listing cannot replace because it encodes each file's *purpose*.
-
-**1.5k is the working ceiling.** Treat a push past it as a signal to move something into a skill, not as a
-budget to spend.
-
-`AGENTS.md` is a symlink to `CLAUDE.md` — tool compatibility with no duplicated content.
-
----
-
-## 12. Instruction language
-
-All instruction files are English. The measured basis:
-
-- Claude's tokenizer has no word markers for Hangul, Han, or emoji, so **they are always tokenized character by character**,
-  with UTF-8 byte fallback for characters lacking a dedicated token. Common syllables cost 1 token; others cost up to 3.
-  ([Sander Land, "On the Biology of Claude's Tokenizer"](https://tokencontributions.substack.com/p/on-the-biology-of-claudes-tokenizer))
-- Measured chars-per-token: English 3.60, Chinese 0.96, Japanese 1.15.
-  ([Claude Code Camp tokenizer measurements](https://www.claudecodecamp.com/p/i-measured-claude-4-7-s-new-tokenizer-here-s-what-it-costs-you))
-- Korean prose expands about 2.79x in characters when translated to English, measured on this repo's own `CLAUDE.md`.
-
-Net effect on the hot path: **20-45% fewer tokens**, roughly 680-2,190 per session.
-On top of that, English carries a modest but real advantage in following procedural conditional logic
-and in calibrating imperative strength (`must never` vs `avoid`).
-
-Two things stay Korean on purpose:
-
-| Item | Why |
-|---|---|
-| Trigger phrases in `description` frontmatter | They are matched against what the user actually types ("문제 내줘"). Semantic matching crosses languages, but the literal phrasing helps |
-| The user-facing output rule | Every skill states explicitly that the user is addressed in Korean. Instruction language does not determine output language |
-
----
-
-## 13. Where this started
-
-Taken from [bevibing/tutor-skills](https://github.com/bevibing/tutor-skills):
-the setup/quiz skill split, markdown state files, proficiency badges, the zero-hint rule, progressive disclosure via references.
-
-Changed:
-dropped the Obsidian dependency (wiki links and fold callouts render nowhere on a phone or the web), dropped codebase mode,
-added confidence tags, added error type classification, added the coverage map, added `format.md`,
-prevented unbounded growth, and added support for multiple exams.
+Started from [bevibing/tutor-skills](https://github.com/bevibing/tutor-skills): the setup/quiz split, markdown state
+files, proficiency badges, the zero-hint rule, progressive disclosure through references. Dropped the Obsidian
+dependency (wiki links and fold callouts render nowhere on a phone) and codebase mode. Added confidence tags, error
+types, the coverage map, format.md, the growth limits above, and multiple exams.
