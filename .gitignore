@@ -6,4 +6,10 @@
 /_inbox/*
 !/_inbox/README.md
 
+# dump
+/dump/
+
 .DS_Store
+
+# Playwright CLI snapshots and console logs
+/output/playwright/.playwright-cli/
