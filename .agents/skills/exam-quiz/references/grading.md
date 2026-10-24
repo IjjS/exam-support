@@ -58,8 +58,8 @@ Q3   정답 4   내 답 2 ✗
 
 - **One line per option. No prose, no paragraph under any option.** The fixed shape is what keeps this
   readable on a phone and what stops explanations from expanding
-- Name the reason, not just the verdict. `"운영부담 위반"` beats `"틀림"`; where a distractor pattern applies
-  (`D1` legacy bait, `D2` over-engineering …) name it — the pattern is more memorable than the instance
+- Name the reason, not just the verdict. `"운영부담 위반"` beats `"틀림"`; where one of `format.md`'s distractor
+  patterns applies, name it by its ID — the pattern is more memorable than the instance
 - Show `내 답` only when it differs from the answer
 - For multiple response, mark every correct option `✓`
 

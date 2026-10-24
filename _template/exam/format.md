@@ -72,6 +72,8 @@ Leave `angles:` empty if the samples do not reveal a consistent axis. Quiz then 
 {{QUESTION_STEMS}}
 
 ## Distractor patterns
+
+<!-- IDs P1, P2, … derived from real questions. The exam's only pattern vocabulary. -->
 {{DISTRACTOR_PATTERNS}}
 
 ## Prohibited

@@ -23,5 +23,5 @@ Any `?` or `??` resets the streak to zero.
 |---|---|---|---|---|---|---|---|---|---|
 | | | | | | | | | | |
 
-<!-- Notes: the option weighed against (shaky) / missed requirement keyword / distractor pattern D1-D5 / partial 1/2 -->
+<!-- Notes: the option weighed against (shaky) / missed requirement keyword / distractor pattern ID from format.md / partial 1/2 -->
 <!-- Diff: E | M | H, the difficulty of the question that produced this entry. Blank on rows written before this column existed. -->

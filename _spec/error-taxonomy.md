@@ -67,17 +67,10 @@ with the LEAST effort      MINIMAL changes to the application
 
 Fell for a standard wrong-answer construction.
 
-- **Signals**: the chosen answer matches one of the patterns below
-- **Treatment**: record the pattern number in `wrongbook.md`. Three or more hits on the same pattern triggers a warning in `exam-status`
+- **Signals**: the chosen answer matches one of the distractor patterns in the exam's `format.md`
+- **Treatment**: record that pattern's ID in the `wrongbook.md` notes column
 
-Distractor patterns:
-```
-D1. Legacy bait       Picks a self-managed EC2 build when a managed service exists
-D2. Over-engineering  Architecture more complex than the requirement calls for
-D3. Boundary error    A configuration that does not work cross-region or cross-account
-D4. Wrong option      Right service, wrong configuration or mode
-D5. Plausible fiction A combination that sounds right but does not exist
-```
+The patterns are per exam, derived from its real questions by `exam-init`. There is no shared list here.
 
 ## 5. recall
 
