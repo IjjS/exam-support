@@ -112,7 +112,7 @@ reading the wrongbook, or names a topic and asks for the actual question — you
 A month of logs runs to tens of thousands of tokens. Reading it whole to find one question would be absurd.
 
 ```
-1. wrongbook row → the `First` date tells you which month file
+1. wrongbook row (`sh _spec/wrongbook.sh {slug} id W-001`) → the `First` date tells you which month file
 2. grep -n "W-001" exams/{slug}/state/log/2026-*.md     → line numbers only
 3. read a window that STARTS ABOVE the match             → offset = line-30, limit 45
 ```

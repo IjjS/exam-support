@@ -39,7 +39,7 @@ MOST cost-effective + two VPCs          →  Peering
 
 ### "My error history"
 
-Pull this pair's entries out of `state/wrongbook.md` — the one-line core and the Notes column are exactly what
+Pull this pair's entries with `sh _spec/wrongbook.sh {slug} rows T-xxx T-yyy` — the one-line core and the Notes column are exactly what
 this section needs. **A comparison table with your own mistakes in it sticks better than a generic one.**
 
 **Do not open `state/log/`.** Only `exam-desc` reads it, and only for an entry the user named. A comparison table

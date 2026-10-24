@@ -80,13 +80,13 @@ someone who has been waiting since they hit send.
 
 **Then issue all six writes as parallel tool calls.** They touch six different files and none reads another's
 output. Settle the `W-id` for each new wrongbook entry first — the log delta and the wrongbook row both
-reference it — but that is a decision, not a read, so it forces no order.
+reference it. `sh _spec/wrongbook.sh {slug} next-id` gives the first one; number the rest upward from it.
 
 | File | Update |
 |---|---|
 | `state/log/{YYYY-MM}.md` | **Short delta only** — the question block is already there from Phase 3. Append one result line per question: answer, the user's pick, confidence, `W-id`, per-option verdicts |
 | `state/mastery.md` | For each topic asked: attempts / correct / lucky / shaky / status / last / **recomputed score** / **the angle just used** — **rewrite the whole row**, see below. Refresh the hot block |
-| `state/wrongbook.md` | Add one line per `miss` / `lucky` / `shaky`, with its origin **and the question's difficulty in the trailing `Diff` column** (`E`/`M`/`H`). Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md`. Refresh the hot block |
+| `state/wrongbook.md` | **Through `_spec/wrongbook.sh` only** — see below. Add one row per `miss` / `lucky` / `shaky`, with its origin **and the question's difficulty in the trailing `Diff` column** (`E`/`M`/`H`). Increment repeats for recurrences. Retire entries that met their streak to `_resolved.md` |
 | `state/sessions.md` | Refresh the hot block, append a log row (with the `fmt:` stamp) **and the session's actual difficulty mix in the trailing `Difficulty` column**, e.g. `E2/M3/H5` |
 | `state/harvest-queue.md` | Queue `no-note`, `exhausted`, and `unverified-question` topics with the A/B verifier URL where one exists, plus `unknown` and `thin-note` cases |
 | `exams/_registry.md` | Update this slug's coverage, accuracy, session count |
@@ -153,11 +153,32 @@ stands, only the criteria are in question.
 Both are **trailing columns**. Rows written before the column existed are left short, and markdown renders the
 missing cell as empty. Never backfill and never reorder columns: any later column must also be appended at the end.
 
+### Writing the wrongbook — through the script, never by hand
+
+Editing `wrongbook.md` directly means loading it, which is the read this skill no longer does. Every change goes
+through `_spec/wrongbook.sh`, one call per kind of change, each fed **complete rows** on stdin:
+
+```bash
+sh _spec/wrongbook.sh {slug} add <<'EOF'      # new entries
+| W-113 | T-041 | shaky | confusion | 2026-10-11 | 0 | 0 | {core} | {notes} | M |
+EOF
+sh _spec/wrongbook.sh {slug} set <<'EOF'      # recurrences: the row from Phase 2 with repeats/streak/notes updated
+| W-016 | T-041 | miss | confusion | 2026-08-19 | 5 | 1 | {core} | {notes} | H |
+EOF
+sh _spec/wrongbook.sh {slug} retire <<'EOF'   # streak met: the row in _resolved.md's columns
+| W-016 | T-041 | miss | confusion | 2026-08-19 | 2026-10-11 | {sessions taken} |
+EOF
+echo "{new value}" | sh _spec/wrongbook.sh {slug} keywords   # only when a missed keyword was recorded
+```
+
+The script places rows inside the table, rejects a row whose cell count differs from the header, refuses a
+duplicate or unknown `W-id`, and recomputes the hot block's `active` and `types` lines itself. A non-zero exit
+means nothing was written for that call — fix the row and rerun it.
+
 ### Appending a row to a table
 
-`sessions.md` and `wrongbook.md` both end with HTML comments **below** the table. Append inside the table, above
-those comments. Appending to the end of the file puts the row outside the table and silently breaks rendering
-from that row down.
+`sessions.md` ends with HTML comments **below** the table. Append inside the table, above those comments.
+Appending to the end of the file puts the row outside the table and silently breaks rendering from that row down.
 
 ### The log result line — the anchor that makes the log searchable
 

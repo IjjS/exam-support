@@ -26,7 +26,7 @@ Reinforce it only if it is thin or the user asks for an update.
 
 ## Called with no argument
 
-Read `state/wrongbook.md` and pull the `confusion` entries.
+Pull the `confusion` entries with `sh _spec/wrongbook.sh {slug} type confusion` — never read the whole book.
 
 **`shaky` entries belong at the top of this list.** An answer tagged `?` means the user narrowed it to two and
 guessed between them — and the Notes column often records exactly which two. That is a comparison table already
@@ -56,7 +56,7 @@ Look locally, in this order, and stop once you have 2-4 neighbors:
 | Order | Source | Why |
 |---|---|---|
 | 1 | The topic note's `Easily confused with` table | harvest writes that section for exactly this purpose |
-| 2 | `state/wrongbook.md` — what the user actually confused it with | their own error outranks textbook similarity |
+| 2 | The topic's wrongbook rows (`sh _spec/wrongbook.sh {slug} rows T-xxx`) — what the user actually confused it with | their own error outranks textbook similarity |
 | 3 | Sibling topics in the same domain, `grep "\| D4 \|" state/mastery.md` | cheap, and scoped to the exam |
 
 Source 2 leads. If they picked Snowmobile over Snowball on a past question, that pair goes first no matter
@@ -170,7 +170,7 @@ Need dedicated bandwidth or consistent latency?
 | File | Update |
 |---|---|
 | `notes/_compare/{file}.md` | Create or update |
-| `state/wrongbook.md` | Mark the entry's notes column `comparison table written` (**do not remove the entry** — only three consecutive correct answers in a quiz resolves it) |
+| `state/wrongbook.md` | Mark the entry's notes column `comparison table written` — whole row via `sh _spec/wrongbook.sh {slug} set` (**do not remove the entry** — only meeting its retirement streak in a quiz resolves it) |
 | `state/harvest-queue.md` | **Ask first** — see below |
 
 ### Offer to queue what you had to research

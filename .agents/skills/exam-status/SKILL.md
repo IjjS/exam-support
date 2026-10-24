@@ -26,13 +26,14 @@ This gets called from a phone, mid-commute. **Finish inside one screen** — if 
 exams/_active.md
 exams/{slug}/state/mastery.md         full
 exams/{slug}/state/sessions.md        Read(limit=15)
-exams/{slug}/state/wrongbook.md       full
+exams/{slug}/state/wrongbook.md       Read(limit=10)  ← hot block: origins, types, missed keywords
 exams/{slug}/state/harvest-queue.md   Read(limit=8)
 exams/{slug}/exam.md                  D-day, passing score
 exams/{slug}/format.md                Read(limit=14)  ← for verified_at
 ```
 
-Never reads `blueprint.md`, `state/log/`, or `_resolved.md`.
+Never reads `blueprint.md`, `state/log/`, `_resolved.md`, or the wrongbook table. For the weakness top-3 detail
+(`3연속 오답 · 개념혼동`), fetch just those rows: `sh _spec/wrongbook.sh {slug} rows T-041 T-052 T-018`.
 
 ## Output (Korean)
 

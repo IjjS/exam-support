@@ -23,10 +23,12 @@ in `format.md` — it follows the exam, not the conversation.
 3. `exams/{slug}/state/sessions.md` via **`Read(limit=15)`** (hot block only)
 4. `exams/{slug}/format.md` in full
 5. `exams/{slug}/state/mastery.md` in full
-6. `exams/{slug}/state/wrongbook.md` in full
+6. `exams/{slug}/state/wrongbook.md` via **`Read(limit=10)`** (hot block only), then the topic index:
+   `sh _spec/wrongbook.sh {slug} index` → one line, `T-041 2 miss,shaky; T-052 1 lucky; …`
 
-**Never read**: `blueprint.md`, `state/log/`, `_resolved.md`, `state/format-drift.md`.
-mastery already carries topic names and domains, so blueprint is unnecessary.
+**Never read**: `blueprint.md`, `state/log/`, `_resolved.md`, `state/format-drift.md`, **`wrongbook.md` in full**.
+mastery already carries topic names and domains, so blueprint is unnecessary. The wrongbook grows with every
+miss; the index says which topics have active entries, and Phase 2 pulls only the selected topics' rows.
 
 If `sessions.md` was modified within the last 5 minutes, another session may be running — warn in one line and continue.
 
@@ -90,6 +92,16 @@ which the old rule would have wrongly held to 3.
 list instead: no two questions from adjacent topic IDs, since neighbouring IDs came from the same part of the
 source material.
 
+### Active wrong answers
+
+- While coverage (mastery hot block) is **80% or below**, re-asking active wrong answers is capped at **40% of the
+  questions** and the rest are new topics — there is still unexplored ground to find blind spots in. Above 80%
+  the cap is off: select purely by score, even if every question re-probes an active entry
+- When re-asking, **never reuse the same question** — probe the same knowledge from a different angle
+- Skip `deprecated` topics
+- Once topics are chosen, pull their active entries — the core, the confused pair, the notes — and nothing else:
+  `sh _spec/wrongbook.sh {slug} rows T-041 T-005 …`. A secondary picked later is fetched the same way
+
 ### Build the level's trace before choosing a topic
 
 When the target level's line in `format.md` asks for dependent steps, draft those steps first in subject-neutral
@@ -131,12 +143,6 @@ forcing variety would train against the real paper. Pick within the distribution
 only to break ties. Never distort the mix to chase a fresh angle.
 
 If `format.md` has no `angles:` list, skip this entirely — there is no axis to vary along.
-
-- While coverage (mastery hot block) is **80% or below**, re-asking active wrong answers is capped at **40% of the
-  questions** and the rest are new topics — there is still unexplored ground to find blind spots in. Above 80%
-  the cap is off: select purely by score, even if every question re-probes an active entry
-- When re-asking, **never reuse the same question** — probe the same knowledge from a different angle
-- Skip `deprecated` topics
 
 ## Phase 3 — Question generation
 
