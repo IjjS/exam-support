@@ -1,4 +1,4 @@
-# weakness-manager
+# exam-support
 
 > The dangerous part of studying for a certification isn't the questions you got wrong.
 > It's the areas you never ran into at all. This repo exists to find those and eliminate them.

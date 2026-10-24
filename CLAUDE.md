@@ -1,4 +1,4 @@
-# weakness-manager
+# exam-support
 
 A markdown-based system for certification study that hunts down the areas you didn't know you didn't know.
 Designed to be driven from a phone via remote control of this Mac. **Short output, one-line input.**

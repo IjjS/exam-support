@@ -32,7 +32,7 @@ Group by how often it gets used, not alphabetically. Someone asking this questio
 what to type next, and four of the eight are things they will rarely touch.
 
 ```
-weakness-manager · 스킬 8개                    활성: aws-sap-c02
+exam-support · 스킬 8개                        활성: aws-sap-c02
 
 매일
   /exam-quiz       문제 풀기 · 채점 · 오답 기록
