@@ -1,80 +1,42 @@
-# _inbox — 소스 넣는 곳
+# Source inbox
 
-자료를 여기 그냥 떨어뜨려 두면 `/exam-init`과 `/exam-harvest`가 알아서 집어갑니다.
-자격증 등록 **전에** 넣어둬도 되고, 나중에 추가해도 됩니다.
+[Korean version](README_KO.md)
 
-**가장 효과가 큰 자료는 기출문제입니다.** 기출이 있으면 `/exam-init`이 문항을 하나씩 정리해 기출 뱅크를 만들고,
-토픽을 실제 출제 단위에 맞게 고치고, 난이도와 문제 형식을 실제 문항으로 맞춥니다. 그 뒤 `/exam-quiz 소스모드`로
-기출을 순서대로 풀 수 있습니다. 등록 후에 구한 기출은 `/exam-init --bank`로 추가합니다.
+Place exam material here before registration or add it later. `/exam-init` uses it to build the exam map and question bank; `/exam-harvest` uses study material to write topic notes. Include the exam name in each filename so the material can be matched to the right exam. An ambiguous filename may require clarification.
 
-**어떤 시험이든 상관없습니다.** 벤더 시험이든 국내 시험이든, 갖고 있는 자료는 다 받습니다.
-내가 가진 자료가 웹 검색 결과보다 항상 우선합니다. 비어 있으면 `/exam-init`이 시작할 때 한 번 물어봅니다.
+**Past questions are especially useful.** `/exam-init` stores each question and its supplied answer in the bank, maps it to topics, and uses the collection to calibrate question format and difficulty. `/exam-quiz` source mode then presents the stored questions in order. Add questions after registration with `/exam-init --bank`.
 
-```
+```text
 _inbox/
-├── AWS_SAP_기출문제_2024.pdf
+├── AWS_SAP_past_questions_2024.pdf
 ├── AWS_SAP_exam_guide.pdf
-├── 유통관리사_출제기준.pdf
-└── 상권분석_강의노트.md
+└── AWS_SAP_lecture_notes.md
 ```
 
-처리가 끝나면 `exams/{slug}/_sources/` 로 옮겨집니다. 원본은 지우지 않습니다.
+Processed files are copied to `exams/{slug}/_sources/`; the originals in `_inbox/` are retained.
 
----
+## Accepted material
 
-## 받을 수 있는 형식
-
-| 형식 | 비고 |
+| Type | Handling |
 |---|---|
-| **웹 (URL)** | 링크만 주면 읽어옵니다 |
-| **PDF** | 구조가 있는 문서엔 가장 권장 |
-| **MD · TXT** | |
-| **DOCX** | 워드 문서 |
-| **XLSX** | 스프레드시트 |
-| **PPTX** | 강의 슬라이드 |
-| **이미지 (PNG · JPG)** | 교재 페이지를 폰으로 찍은 것도 됩니다 |
-| ~~HWP~~ | **못 읽습니다.** 한글에서 "PDF로 저장" 후 넣어주세요 |
+| URL | Provide the link in the conversation |
+| PDF | Preferred for structured guides and past papers |
+| MD, TXT | Read directly |
+| DOCX, XLSX, PPTX | Used for documents, spreadsheets, and slides |
+| PNG, JPG | Photos or scans of individual pages |
+| HWP | Export to PDF first; HWP cannot be read here |
 
-국내 자격증 출제기준은 대개 HWP로 배포됩니다. 표 구조가 곧 문서의 뼈대라
-자동 변환보다 한글에서 직접 PDF로 내보내는 쪽이 훨씬 정확합니다.
+You can also give a file path, URL, or attachment directly in the conversation. Substantial material supplied there is saved to the exam's `_sources/` before use.
 
----
+## Where it goes
 
-## 파일 말고 다른 방법
-
-**경로를 직접 알려주기**
-```
-/exam-init 유통관리사 2급  ~/Downloads/출제기준.pdf
-```
-
-**URL 주기**
-```
-/exam-harvest  https://docs.aws.amazon.com/...
-```
-
-**채팅에 첨부하거나 붙여넣기** — 분량이 있는 자료는 `exams/{slug}/_sources/` 에 자동 저장됩니다.
-그래야 세션이 끝나도 남고, 나중에 `--format` 재실행할 때 다시 씁니다.
-
----
-
-## 파일 이름
-
-정확할 필요는 없지만, 자격증 이름이 들어 있으면 어느 시험 자료인지 자동으로 판별합니다.
-안 들어 있으면 물어봅니다. 여러 자격증 자료가 섞여 있어도 됩니다.
-
----
-
-## 어느 스킬이 무엇을 쓰나
-
-| 자료 | 스킬 | 들어가는 곳 |
+| Material | Skill | Result |
 |---|---|---|
-| **출제기준 · Exam Guide** | `/exam-init` | `blueprint.md` — 도메인·토픽 트리 |
-| **기출문제집 · 샘플문항** | `/exam-init` (Phase 4) | `format.md` — 형식만 추출, 원문은 저장 안 함 |
-| **교재 · 강의노트 · 문서** | `/exam-harvest` | `notes/` — 개념 노트 |
-| 시험 공고 | `/exam-init` | `exam.md` — 문항수·시간·합격기준 |
+| Exam guide or criteria | `/exam-init` | Sections and permanent topic IDs in `blueprint.md` |
+| Past questions | `/exam-init` or `/exam-init --bank` | Original question text and supplied key in `_sources/questions/`; topic mapping and format calibration |
+| Textbooks, lecture notes, documentation | `/exam-harvest` | Sourced concept notes in `notes/` |
+| Exam announcement | `/exam-init` | Exam details in `exam.md` |
 
-등록이 끝난 뒤에 출제기준을 추가했다면 `/exam-init --refine`(토픽) 또는 `/exam-init --format`(출제 형식)을
-돌려야 합니다. harvest는 노트만 씁니다.
+If you add an exam guide after registration, run `/exam-init --refine` to update the topic map or `/exam-init --format` to refresh the question format. Harvest builds notes; it does not change the exam map or format.
 
-기출문제집은 **형식과 출제 경향만** 뽑고 문제 원문은 저장하지 않습니다.
-`format.md`에 남는 건 같은 형식으로 새로 쓴 합성 예시 2개뿐입니다.
+User-supplied files are searched before the web, but a supplied answer key is still a claim to check when grading depends on it. See the [source policy](../_spec/source-policy.md).

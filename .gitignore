@@ -5,6 +5,7 @@
 # User-supplied sources — copyright and size
 /_inbox/*
 !/_inbox/README.md
+!/_inbox/README_KO.md
 
 # dump
 /dump/

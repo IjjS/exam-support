@@ -1,460 +1,100 @@
 # exam-support
 
-> The dangerous part of studying for a certification isn't the questions you got wrong.
-> It's the areas you never ran into at all. This repo exists to find those and eliminate them.
+[Korean version](README_KO.md)
 
-A certification study system built from eight Claude Code skills and a pile of markdown files.
-No database, no server, no app. Everything is a `.md`.
+A Markdown-based certification study system for finding two kinds of gaps: **topics you have never been tested on** and **topics you have tested poorly on**. It maps the exam scope, tracks both coverage and performance by topic, and directs practice toward the gaps.
 
----
+It uses eight agent skills and local Markdown files. There is no database or server. Sessions are designed for short output and one-line answers on a phone.
 
-## What's different
+## How it finds gaps
 
-Most quiz apps track **accuracy**. But accuracy is computed only over the questions already asked,
-so untouched territory never shows up in the statistics. And on a 4- or 5-option question,
-elimination gets you a fair number of correct answers you didn't actually know.
-
-This system looks at the blind spot through three layers.
-
-| Layer | Mechanism | What it catches |
+| Signal | What it reveals | Where to focus |
 |---|---|---|
-| 1 | **Coverage map** — the official exam scope expanded to leaf topics, with ⬜ untested tracked | Areas never asked about |
-| 2 | **Confidence tags** — a lucky guess counts as wrong | Ignorance hidden by luck |
-| 3 | **Error type classification** — five reasons you got it wrong | Mistakes that need different treatment |
+| Untested topics | Parts of the exam scope you have not encountered | Diagnostic quiz |
+| Wrong, guessed, or shaky answers | Knowledge that needs another check, even when a guess was correct | Weakness quiz and wrong-answer book |
+| Error types | Whether the problem was missing knowledge, confusion, misreading, a distractor, or recall | Notes, comparisons, and targeted practice |
 
----
+Coverage and accuracy answer different questions. A topic with no attempts is **unexplored**, not proven weak. The status view shows both surface accuracy and real accuracy; a correct answer marked as a guess is excluded from real accuracy.
 
-## How the pieces fit
+## Start studying
 
-Eight skills. Two of them are the loop you actually live in; the rest are there when you need them.
-`/exam-skills` prints the list at any time.
+1. Put any exam guide, study material, or past questions in [`_inbox/`](_inbox/README.md). You can also provide a path, URL, or attachment when registering the exam.
+2. Register the exam with `/exam-init {exam name}`. This creates the topic map and question format. Past questions, when available, become a bank and help calibrate both.
+3. Run `/exam-quiz` to test unexplored topics. Run `/exam-status` to see coverage, weak topics, and the next suggested action.
+4. Run `/exam-harvest 3` to turn queued topics into sourced notes. Ask for weakness mode when you want to revisit known gaps.
 
-```mermaid
-flowchart TB
-    subgraph once ["once per exam"]
-        INIT["<b>/exam-init</b><br/>find the exam guide<br/>build the topic map<br/>analyze question format"]
-    end
+The default quiz is diagnostic at every stage. **Weakness mode runs only when requested**, after at least three diagnostic or mock sessions; this keeps the default focused on finding untested areas. Source mode works through the past-question bank in order when one exists.
 
-    subgraph loop ["the daily loop"]
-        QUIZ["<b>/exam-quiz</b><br/>ask · grade · record"]
-        HARV["<b>/exam-harvest</b><br/>read official docs<br/>write concept notes"]
-    end
-
-    subgraph aside ["when you need them"]
-        STAT["<b>/exam-status</b><br/>where am I"]
-        COMP["<b>/exam-comp</b><br/>A vs B"]
-        DESC["<b>/exam-desc</b><br/>what is this"]
-        SKIL["<b>/exam-skills</b><br/>what can I run"]
-        RSET["<b>/exam-reset</b><br/>start over"]
-    end
-
-    INIT -->|"blueprint.md<br/>format.md"| QUIZ
-    QUIZ -->|"topics with no note<br/>land in harvest-queue"| HARV
-    HARV -->|"notes make the<br/>next questions better"| QUIZ
-    QUIZ -.->|"confusion-type<br/>wrong answers"| COMP
-    QUIZ -.-> STAT
-    HARV -.-> STAT
-    STAT -.->|"tells you which<br/>to run next"| QUIZ
+```text
+/exam-quiz                 # Find untested topics
+/exam-quiz weakness mode   # Revisit recorded weak topics
+/exam-quiz source mode 20  # Work through 20 bank questions
 ```
 
-**The loop is self-feeding.** Every question asked about a topic with no note queues that topic.
-Harvest drains the queue into notes. The next question on that topic comes from the note instead of the web.
-Quiz gets faster and more accurate the more you use it.
+## Answer on one line
 
-### What a single session does
-
-```mermaid
-flowchart TD
-    A["read state<br/><i>sessions · mastery · wrongbook · format</i>"] --> B{"3 basic<br/>sessions done?"}
-    B -->|"no"| C["<b>basic mode</b><br/>untested topics first<br/>spread by blueprint weight"]
-    B -->|"yes"| D["<b>weakness mode</b><br/>worst scores + lucky guesses<br/>+ unresolved wrong answers"]
-    C --> E["pick 5 topics"]
-    D --> E
-    E --> F{"does the topic<br/>have a note?"}
-    F -->|"yes"| G["build from the note"]
-    F -->|"no · up to 2 per session"| H["verify on official docs"]
-    F -->|"no · past the cap"| I["build from model knowledge<br/><b>tag UNVERIFIED</b>"]
-    G --> J["present 5 questions"]
-    H --> J
-    I --> J
-    H -.-> Q[("harvest-queue")]
-    I -.-> Q
-    J --> K["you answer:<br/><code>1 3? 2,4?? 5 1</code>"]
-    K --> L{"confidence tag?"}
-    L -->|"?? correct"| M["<b>scored wrong</b> · book as lucky"]
-    L -->|"? correct"| S["scored correct · <b>book as shaky</b>"]
-    L -->|"wrong"| N["scored wrong · book as miss"]
-    L -->|"confident correct"| Z["nothing to do"]
-    M --> O["classify why"]
-    S --> O
-    N --> O
-    O --> P["update state · explain only what went in the book"]
+```text
+1 3? 2,4?? 5
 ```
 
-## Getting started
+Each entry answers the next question. Commas select multiple options. Add `?` for an uncertain choice or `??` for a guess.
 
-### 0. Put past questions in `_inbox/` — the single biggest lever
-
-A past-question collection makes every later step match the real exam: the topics are checked against what is
-actually asked, difficulty is calibrated on real items, and the questions become a bank you can work through in order.
-No collection? `/exam-init` asks once, and can gather past questions from the web for you.
-
-### 1. Register an exam
-
-```
-/exam-init AWS SAP
-```
-
-Asks about sources if `_inbox/` is empty, then finds the official exam guide, extracts sections and their weights, and
-breaks them down to leaf topics (`blueprint.md`). With past questions it also:
-
-- files each one into a bank — `_sources/questions/Q001.md …` plus `index.jsonl`
-- maps every question to its topics, and uses that to fix the topic list (missing topics, overloaded ones)
-- calibrates the **question format spec** (`format.md`) — option count, multiple-response share, stem length,
-  difficulty levels, distractor patterns — on the real items, and records each question's level
-
-Mention your exam date if you have one and a D-day gets tracked. The last line of the report says what to run next.
-Past questions found later go in with `/exam-init --bank`.
-
-### 2. Answer questions
-
-```
-/exam-quiz 소스모드 20     # the past questions, in order — when you have a bank
-/exam-quiz                 # diagnostic: freshly generated, untested topics first
-```
-
-Answer on one line:
-
-```
-1 3? 2 5?? 4
-```
-
-Source mode is the closest practice to the real paper; diagnostic sessions in between reach the topics the bank never
-asks about.
-
-### 3. Fill in the knowledge
-
-```
-/exam-harvest 3
-```
-
-As you take quizzes, topics that had no notes and were asked provisionally pile up in a queue.
-Harvest reads vendor official documentation and turns them into proper notes. Three topics takes about two minutes.
-
-Those three commands are the loop. Everything else is there when you need it.
-
----
-
-## Supplying your own sources
-
-**Any exam, any time.** Whatever you have — an official exam guide, a textbook, lecture notes, a past-paper
-collection, a page you photographed — hand it over and it gets used. This is not only for exams with poor web coverage;
-your own material always outranks what a search turns up.
-
-### Accepted source types
-
-| Type | Notes |
-|---|---|
-| **Web (URL)** | Hand over a link and it gets fetched |
-| **PDF** | Best option for structured documents |
-| **MD · TXT** | |
-| **DOCX** | Word documents |
-| **XLSX** | Spreadsheets |
-| **PPTX** | Lecture slides |
-| **Images** (PNG · JPG) | A phone photo of a textbook page works |
-| ~~HWP~~ | **Not readable** — export as PDF from 한글 first. Automatic conversion mangles the tables that carry the structure |
-
-### Three ways to hand something over
-
-**1. Drop it in `_inbox/`** — before registering an exam is fine; so is adding more later
-
-```
-_inbox/
-├── AWS_SAP_exam_guide.pdf
-├── 유통관리사_출제기준.pdf
-└── 상권분석_강의노트.md
-```
-
-**2. Name a path or a URL**
-
-```
-/exam-init 유통관리사 2급  ~/Downloads/출제기준.pdf
-/exam-harvest  https://docs.aws.amazon.com/...
-```
-
-**3. Attach or paste it into the conversation** — anything substantial gets saved to `exams/{slug}/_sources/`
-so it survives the session and can be reused later
-
-Everything ends up in `exams/{slug}/_sources/`. Originals in `_inbox/` are never deleted.
-
-### Which skill uses what
-
-| Material | Skill | Goes into |
+| Answer | Score if correct | Review |
 |---|---|---|
-| Exam guide · 출제기준 | `/exam-init` | `blueprint.md` — domains and topics |
-| Past papers | `/exam-init`, `/exam-init --bank` | `_sources/questions/` — the bank for source mode; topic mapping; `format.md` calibration |
-| Official sample questions | `/exam-init` (Phase 5) | `format.md` — question format only |
-| Textbook · lecture notes · docs | `/exam-harvest` | `notes/` — concept notes |
-| Exam announcement | `/exam-init` | `exam.md` — question count, duration, passing score |
+| `2` | Correct | No entry |
+| `2?` | Correct | Added as shaky; clears after 2 confident correct answers |
+| `2??` | Wrong | Added as lucky; clears after 3 confident correct answers |
+| Any wrong answer | Wrong | Added as miss; clears after 3 confident correct answers |
 
-If you add an exam guide **after** registration, run `/exam-init --refine` (blueprint) or `/exam-init --format`
-(question format) — harvest only writes notes.
+An uncertain or guessed answer resets the confident-answer streak. After grading, every option receives a one-line verdict.
 
-Where this matters most is exams with thin web coverage. AWS and CNCF publish everything online, but Korean
-certifications distribute their 출제기준 as HWP and rarely release past papers, so your own collection is often the
-only bank there is.
-With the 출제기준 in hand the blueprint comes out cleaner than a vendor exam's —
-`주요항목 → 세세항목` maps straight onto domains and leaf topics.
+## Skills
 
-See [_inbox/README.md](_inbox/README.md) for details.
-
-## Answer syntax
-
-The number of question marks is how unsure you are.
-
-| Input | Meaning |
+| Skill | Use |
 |---|---|
-| `2` | Confident — I knew it |
-| `2?` | Shaky — narrowed it to two |
-| `2??` | Guessed — I basically don't know |
-| `2,4` | Multiple response (Choose TWO) |
-| `2,4??` | Multiple response, guessed |
+| `/exam-init` | Register an exam; add past questions with `--bank`, refine topics with `--refine`, or refresh the question format with `--format` |
+| `/exam-quiz` | Diagnostic questions by default; request weakness, source, section, or mock mode as needed |
+| `/exam-status` | See coverage, accuracy, weak topics, and a suggested next action |
+| `/exam-harvest` | Build or extend notes for queued topics from source material |
+| `/exam-comp` | Compare concepts you confuse |
+| `/exam-desc` | Explain an exam concept or retrieve a named past question |
+| `/exam-reset` | Reset study state after a backup and confirmation |
+| `/exam-skills` | List the skills and their commands |
 
-**Every question mark puts the topic in the wrong-answer book**, whether or not you got it right.
+Generated questions follow the exam-specific `format.md`. They favor untested topics in diagnostic mode and recorded weak topics in weakness mode. Source mode presents stored past questions in bank order. A disputed source answer is checked against notes and official material; an ambiguous or broken item is voided.
 
-| You typed | Scored as | Goes in the book | Clears after |
-|---|---|---|---|
-| `2` | correct | no | — |
-| `2?` | **correct** | **yes** — `shaky` | 2 confident correct |
-| `2??` | **wrong** | yes — `lucky` | 3 confident correct |
-| wrong answer | wrong | yes — `miss` | 3 confident correct |
+## Sources and records
 
-Scoring and reviewing are separate decisions. A `?` answer was genuinely correct, so it counts in your accuracy —
-but you narrowed it to two and won a coin flip, which is not the same as knowing it. It comes back until you
-answer it twice without hesitating.
+Search starts with the exam's `_sources/`, then the web. Claims and answer distinctions are checked against official documentation or guides. A readable user-supplied file may stand on its own when no official source covers it. Questions that cannot be verified are marked `[UNVERIFIED]`; their topics can be queued for note collection. Notes record their sources and dates.
 
-Any `?` or `??` resets the streak. The entry is there because certainty is what was missing.
+Accepted input includes URLs, PDF, Markdown, TXT, DOCX, XLSX, PPTX, PNG, and JPG. Export HWP files to PDF first. Files from `_inbox/` are copied into the exam's `_sources/`; the originals are retained.
 
-The more honestly you attach question marks, the more accurate the system gets.
-Plain `2` every time works fine, but that switches off one of the three layers.
-
----
-
-## Commands
-
-| Command | What it does |
-|---|---|
-| `/exam-quiz` | Diagnostic questions — freshly generated, untested topics first |
-| `/exam-quiz 소스모드 20` | Work through the past-question bank in order |
-| `/exam-quiz 10문제` | Set the number of questions |
-| `/exam-quiz D2` | One domain only |
-| `/exam-quiz 모의고사 30` | Mock exam. Batch grading plus a per-domain score table |
-| `/exam-status` | Current state on one screen — coverage, weak spots, D-day, what to do next |
-| `/exam-harvest` | Turn queued topics into notes |
-| `/exam-harvest D2` | By domain |
-| `/exam-comp SCP vs IAM policy` | Build or show a comparison table |
-| `/exam-comp Snowball` | One concept → finds what it gets confused with, then compares |
-| `/exam-comp 하이브리드 연결` | Three or more options becomes a decision guide |
-| `/exam-comp` | No argument → list the wrong answers that need comparison tables |
-| `/exam-desc Transit Gateway` | Explain a concept from your notes |
-| `/exam-desc 상권분석` | Explain a whole domain — what it covers and how it is weighted |
-| `/exam-desc W-001` | Pull a past question back out of the log |
-| `/exam-init 자격증명` | Register a new exam |
-| `/exam-init --bank` | Add past questions to the bank |
-| `/exam-init --refine` | Refine the topics and re-map the bank |
-| `/exam-init --format` | Refresh the question format spec |
-| `/exam-reset` | Reset state (after backup) |
-| `/exam-reset --rm 자격증` | Unregister an exam entirely, archiving it first |
-| `/exam-skills` | List every skill and what it does |
-
----
-
-## Study modes
-
-| Mode | What it asks | Use it for |
-|---|---|---|
-| **Source** (`소스모드`) | The past-question bank, in order, as written | The closest practice to the real paper |
-| **Diagnostic** (default) | Fresh questions, untested (⬜) topics first, by section weight | Finding what you never met — including topics the bank never reaches |
-| **Weakness** (on request) | Your highest-scoring weak topics and open wrong answers | Drilling known gaps, once three diagnostic or mock sessions exist |
-| **Section** (`D2`) | One section only | Focused work |
-| **Mock exam** (`모의고사 30`) | Real exam weights, graded in batches | Exam feel and a per-section score |
-
-Diagnostic stays the default at every session count. Coverage is the long pole, and a mode that switched itself to
-drilling known weaknesses would stop looking for the unknown ones. The difficulty mix of each generated mode comes
-from your exam's `format.md`, calibrated on its real questions.
-
-### The same topic, from a different side
-
-Answering a topic correctly three times the same way is mastery of one facet, not the topic. So each topic
-remembers the **angle** it was last probed from — `cost`, `ops`, `resilient`, or whatever axis your exam
-actually varies along — and the next question on it prefers a different one.
-
-The real exam's distribution still wins. If your paper is 60% cost-framed, you get cost-framed questions;
-the angle only breaks ties. Chasing variety past what the exam does would be training against it.
-
----
-
-## Error types
-
-Different reasons for a wrong answer need different treatment.
-
-| Type | Meaning | Automatic treatment |
-|---|---|---|
-| Unknown | Concept you simply don't know | Queued for harvest |
-| Confusion | Mixing up two similar things | Comparison table candidate |
-| Misread | Missed the requirement keyword | Missed keyword logged and counted |
-| Distractor | Fell for a plausible wrong option | Distractor pattern accumulated |
-| Recall | Knew the concept, got the number wrong | Card added to `_facts.md` |
-
-On an exam like AWS SAP, where `MOST cost-effective` and `LEAST operational overhead` decide the answer,
-**misread costs more points than genuine ignorance does.** So it gets counted separately.
-
----
-
-## Storage layout
-
-```
-exams/aws-sap/
-├── exam.md          Exam metadata (code, question count, time, passing score, D-day)
-├── format.md        Question format spec, format anchors, question angles
-├── blueprint.md     Structure, sections, weights, topic tree (immutable spec)
-├── _sources/        Your files; questions/ holds the past-question bank and its index
-├── notes/           Concept notes, comparison tables, fact cards
-└── state/           Proficiency, wrong answers, session log, harvest queue
+```text
+exams/{slug}/
+├── exam.md              Exam metadata and date
+├── blueprint.md         Sections, weights, and permanent topic IDs
+├── format.md            Exam-specific question format
+├── _sources/            Supplied material and the optional question bank
+├── notes/               Topic notes, comparisons, and fact cards
+└── state/
+    ├── mastery.md       Topic attempts, coverage, accuracy, and weakness scores
+    ├── wrongbook.md     Active misses, lucky guesses, and shaky answers
+    ├── sessions.md      Session summaries and source-mode progress
+    ├── harvest-queue.md Topics awaiting notes
+    └── log/             Archived question text and results
 ```
 
-Each exam gets its own complete set. A wrong answer on AWS SAP has no effect on CKA.
+Each exam has separate study data. `blueprint.md` defines the scope; changing proficiency and coverage live in `state/mastery.md`. Topic IDs are permanent, including when an exam is reorganized. The quiz does not reread the growing question log during ordinary sessions.
 
-### Exams without domains
+## Project files
 
-Not every exam is organized the way AWS is. Registration records which of three shapes yours takes:
+- [Agent instructions](CLAUDE.md) — operating rules shared through `AGENTS.md` and `GEMINI.md` links.
+- [Design notes](docs/DESIGN.md) — rationale and data rules.
+- [Source policy](_spec/source-policy.md) — verification and citation rules.
+- [Inbox guide](_inbox/README.md) — supported input and handling details.
 
-| | Looks like |
-|---|---|
-| `weighted` | Named domains with published percentages — AWS, most vendor exams |
-| `counted` | Subjects with a fixed question count each — Korean national certifications |
-| `flat` | One curriculum, no grouping at all |
-
-`flat` is a real answer, not a failure to find structure. Inventing domains would invent weights, and those
-would skew how questions get spread for the rest of your study. Under `flat`, notes sit directly in `notes/`
-and questions spread across the topic list instead of across sections.
-
-### Who writes what
-
-```mermaid
-flowchart LR
-    subgraph SK ["skills that write"]
-        direction TB
-        I["/exam-init"]
-        H["/exam-harvest"]
-        Q["/exam-quiz"]
-        C["/exam-comp"]
-        R["/exam-reset"]
-    end
-
-    subgraph FI ["files"]
-        direction TB
-        BP["blueprint.md"]
-        FM["format.md"]
-        QB["_sources/questions/"]
-        NT["notes/"]
-        CM["notes/_compare/"]
-        MA["state/mastery.md"]
-        WB["state/wrongbook.md"]
-        SE["state/sessions.md"]
-        HQ["state/harvest-queue.md"]
-        LG["state/log/"]
-    end
-
-    I --> BP
-    I --> FM
-    I --> QB
-    I --> MA
-    H --> NT
-    H --> CM
-    H --> HQ
-    Q --> MA
-    Q --> WB
-    Q --> SE
-    Q --> HQ
-    Q --> LG
-    C --> CM
-    R -.-> MA
-    R -.-> WB
-    R -.-> SE
-
-    style BP fill:#1f3a5f,color:#fff
-    style FM fill:#1f3a5f,color:#fff
-    style LG fill:#4a3728,color:#fff
-```
-
-Blue = written once and treated as immutable afterwards. Brown = never read during a study session.
-`/exam-reset` is dashed because it only ever writes after copying the originals into `_archive/`.
-
-Three rules hold this together:
-
-- **`blueprint.md` is written once and never again** — coverage and accuracy live in `mastery.md`, so quiz never
-  touches the spec
-- **`format.md` changes only through `/exam-init --format`** — harvest may observe a change but never apply one
-- **`state/log/` is write-only in the loop** — quiz appends the full question text and never reads it back,
-  which is what keeps session cost flat no matter how long you study. You can still pull one question back out:
-  point at a wrong-answer entry and `/exam-desc` fetches just that block by its ID
-
----
-
-## Multiple exams
-
-```
-/exam-init Claude Certified Associate
-/exam-quiz aws-sap            ← name an exam
-/exam-status                  ← overall view
-```
-
-`exams/_active.md` remembers the current exam, so you normally don't need to name one.
-
----
-
-## Things to know
-
-- **Don't work the same exam from two sessions at once.** Last write to the state files wins. (No lock — single-user assumption.)
-- **Without notes, question quality drops.** When you keep seeing `[UNVERIFIED]` tags, it's time to run harvest.
-- **Search, then verify.** Notes and questions both start from your own files in `_sources/`, then the web —
-  past-question sites included. Every claim is then checked against official docs or guides before it is used.
-  Each note lists where its material came from: `source:` for your files, `web:` with the URL for everything else.
-- **You'll be told when the exam changes.** If harvest spots a format change while reading official docs, it records it.
-  Topic IDs are never reissued, so your accumulated history survives a reorganization.
-
----
-
-## Other agents
-
-The skills follow the [Agent Skills](https://agentskills.me) open format and live in `.agents/skills/`, which
-Codex and Gemini CLI both read directly. `.claude/skills` is a symlink to the same directory, and `AGENTS.md`
-and `GEMINI.md` are symlinks to `CLAUDE.md` — one copy of everything, three tools.
-
-| | Skills read from | Project instructions | Invoke |
-|---|---|---|---|
-| Claude Code | `.claude/skills/` → link | `CLAUDE.md` | `/exam-quiz`, or just ask |
-| Codex | `.agents/skills/` | `AGENTS.md` → link | `$` prefix or `/skills`, or just ask |
-| Gemini CLI | `.agents/skills/` | `GEMINI.md` → link | `activate_skill`, or just ask |
-
-All three do implicit activation from the skill description, so plain language ("문제 내줘") works everywhere.
-
-Two things differ outside Claude Code: harvest's parallel collection falls back to sequential where subagents
-aren't available (same notes, roughly 3x the wall time), and tool names in the skill bodies are written in
-Claude Code's vocabulary — `Read(limit=15)` means "read only the first 15 lines," which other agents infer
-but do not execute identically.
-
-## Documents
-
-| | |
-|---|---|
-| `CLAUDE.md` | Agent operating rules (auto-loaded every session) |
-| `docs/DESIGN.md` | Design rationale, token budget, migration rules |
-| `_spec/error-taxonomy.md` | How the five error types are decided |
-| `_spec/source-policy.md` | Where material comes from, and how it is verified |
+The skills live in `.agents/skills/`; `.claude/skills/` links to the same directory.
 
 ## License
 
-[MIT](LICENSE). The overall shape started from [bevibing/tutor-skills](https://github.com/bevibing/tutor-skills) (MIT) —
-see `docs/DESIGN.md` §16 for what was kept and what changed.
+[MIT](LICENSE). The initial structure drew on [bevibing/tutor-skills](https://github.com/bevibing/tutor-skills); see [design notes](docs/DESIGN.md) for the changes.
