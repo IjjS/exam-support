@@ -6,6 +6,25 @@ A Markdown-based certification study system for finding two kinds of gaps: **top
 
 It uses eight agent skills and local Markdown files. There is no database or server. Sessions are designed for short output and one-line answers on a phone.
 
+## Quick start
+
+You need Git and an AI coding agent that can read this project's instructions and skills.
+
+1. Open a terminal in the folder where you want to keep your study workspace, then run:
+
+   ```sh
+   git clone https://github.com/IjjS/exam-support.git
+   cd exam-support
+   ```
+
+2. Open the cloned folder in your agent. This is a workspace of instructions and Markdown files; no package installation or server is needed.
+3. Tell the agent: **“Read the project instructions and use exam-init to register AWS SAP.”** Replace AWS SAP with your exam. Supply past questions or an exam guide if available.
+4. Ask **“Give me 5 questions”**, then **“Show my study status.”** You can also use the skill commands below when your agent supports them.
+
+Study records are saved under `exams/{slug}/` inside this folder. Keep using the same workspace to continue studying.
+
+**Windows:** use WSL for the current workspace workflow. Native Windows compatibility has not been verified: the repository uses symbolic links, Bash helpers, and a macOS PDFKit/Swift PDF reader. A cross-platform installer alone would not remove those dependencies.
+
 ## How it finds gaps
 
 | Signal | What it reveals | Where to focus |
