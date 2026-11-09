@@ -5,7 +5,11 @@ Used by `exam-init` (Phases 0, 2, and 5) and `exam-harvest` (Phase 1).
 
 ---
 
-## PDF — never open it with the Read tool first
+## PDF — choose by platform
+
+**Native Windows:** use the agent's available PDF/document tools to read the supplied file directly. Prefer text extraction when available; otherwise inspect only the relevant page ranges with the model's PDF/vision capability. Do not install Swift or require Bash. Preserve page numbers in citations. If the agent cannot access or read the PDF, report that limitation and ask for a readable export; never infer its contents.
+
+**macOS/Linux:** follow the extraction-first procedure below. PDFKit is macOS-only; on Linux start with `pdftotext`.
 
 The Read tool renders PDF pages **as images**. A 64-page exam criteria document becomes 64 page images,
 costing roughly **10-50x** the tokens of a text extraction. Extract text first, read the text.

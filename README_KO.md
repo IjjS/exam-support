@@ -8,6 +8,24 @@
 
 ## 빠른 시작
 
+### 작업 공간 전체 설치
+
+macOS/Linux (`curl`, `unzip` 필요):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/IjjS/exam-support/main/install.sh | sh
+```
+
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/IjjS/exam-support/main/install.ps1 | iex
+```
+
+현재 위치에 `exam-support/`를 만들고 스킬·지침·템플릿·빈 학습 상태를 모두 설치합니다. 에이전트에서 이 폴더를 열고 시험 등록을 요청하세요. Git이나 Node.js는 필요 없습니다. 같은 이름의 폴더가 있으면 중단하므로 기존 학습 기록을 덮어쓰지 않습니다. 신규 설치용이며 업데이트 기능은 없습니다. 에이전트용 파일은 심볼릭 링크 대신 실제 파일로 복사합니다. Windows에서는 PowerShell 오답노트 도우미를 사용하고 PDF는 에이전트의 문서 읽기 기능에 맡깁니다. 해당 PDF를 읽을 수 있는 에이전트가 필요합니다.
+
+### 또는 Git으로 복제
+
 Git과 프로젝트 지침·스킬을 읽을 수 있는 AI 코딩 에이전트가 필요합니다.
 
 1. 학습 폴더를 보관할 위치에서 터미널을 열고 실행합니다.
@@ -23,7 +41,7 @@ Git과 프로젝트 지침·스킬을 읽을 수 있는 AI 코딩 에이전트�
 
 학습 기록은 이 폴더의 `exams/{slug}/`에 저장됩니다. 이어서 공부할 때도 같은 작업 폴더를 사용하세요.
 
-**Windows:** 현재 작업 흐름은 WSL 사용을 권장합니다. 네이티브 Windows 호환은 검증되지 않았으며, 저장소에 심볼릭 링크, Bash 도우미, macOS PDFKit/Swift 기반 PDF 리더가 있습니다. 설치 프로그램을 공통화해도 이 의존성은 별도로 해결해야 합니다.
+**Windows:** Git 심볼릭 링크 설정이 필요 없는 위 설치 방식을 권장합니다. 네이티브 Windows 실행은 아직 검증하지 않았으며 WSL도 사용할 수 있습니다.
 
 ## 학습 공백을 찾는 방법
 

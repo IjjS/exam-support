@@ -45,7 +45,7 @@ Check `_inbox/` first. New files there for this exam get processed ahead of the 
 Accepted: URL, PDF, MD, TXT, DOCX, XLSX, PPTX, images. HWP must be exported to PDF from 한글 first.
 
 **Read `_spec/file-reading.md` before opening any local file.** PDFs go through
-`swift _spec/pdftext.swift <file.pdf>` (macOS, no install), never the Read tool — page rendering costs 10-50x.
+text extraction first on macOS/Linux (`swift _spec/pdftext.swift` is macOS-only). On native Windows, use the agent's PDF tools/model on relevant pages as described there.
 A file that could not be read must never be cited as a source.
 
 **Material handed over in the conversation** — if the user attaches or pastes something substantial, save it to

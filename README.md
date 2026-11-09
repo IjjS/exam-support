@@ -8,6 +8,24 @@ It uses eight agent skills and local Markdown files. There is no database or ser
 
 ## Quick start
 
+### Install the whole workspace
+
+macOS/Linux (requires `curl` and `unzip`):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/IjjS/exam-support/main/install.sh | sh
+```
+
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/IjjS/exam-support/main/install.ps1 | iex
+```
+
+This creates `exam-support/` in the current folder with all skills, instructions, templates, and empty study state. Open that folder in your agent and ask it to register an exam. Git and Node.js are not required. Existing destinations are refused, so rerunning cannot overwrite study records. This is a fresh-install command, not an updater. Installed agent files are real copies, not symbolic links. Windows uses the PowerShell wrongbook helper and the agent's PDF tools; PDF reading requires an agent capable of reading the supplied document.
+
+### Or clone with Git
+
 You need Git and an AI coding agent that can read this project's instructions and skills.
 
 1. Open a terminal in the folder where you want to keep your study workspace, then run:
@@ -23,7 +41,7 @@ You need Git and an AI coding agent that can read this project's instructions an
 
 Study records are saved under `exams/{slug}/` inside this folder. Keep using the same workspace to continue studying.
 
-**Windows:** use WSL for the current workspace workflow. Native Windows compatibility has not been verified: the repository uses symbolic links, Bash helpers, and a macOS PDFKit/Swift PDF reader. A cross-platform installer alone would not remove those dependencies.
+**Windows:** prefer the installer above, which avoids Git symbolic-link setup. Native Windows execution has not yet been tested; WSL remains an alternative.
 
 ## How it finds gaps
 

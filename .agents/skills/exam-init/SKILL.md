@@ -44,7 +44,7 @@ For a domestic exam, name the 출제기준 PDF in the same message — the web a
 - `③` continue without a bank. Never ask again in this run — the question exists to inform, not to block
 
 **Reading files**: read `_spec/file-reading.md` before opening any local file. Never open a PDF with the Read tool
-first — it renders pages as images and costs 10-50x; extract text with `swift _spec/pdftext.swift <file.pdf>`.
+first on macOS/Linux — extract text as described there. On native Windows, use the agent's PDF tools/model on relevant pages, following that file's Windows procedure.
 **HWP cannot be read** — ask for a PDF export from 한글. **A file you could not read is never cited**; say so and ask
 how to proceed.
 

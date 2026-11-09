@@ -5,6 +5,8 @@ Designed to be driven from a phone via remote control of this Mac. **Short outpu
 
 ## Conversation rules
 
+- On native Windows, translate POSIX shell examples to PowerShell. Replace `sh _spec/wrongbook.sh` with `powershell -NoProfile -File _spec/wrongbook.ps1` (same arguments; pipe complete rows via a here-string). Use PowerShell file operations instead of Bash utilities. Read `_spec/file-reading.md` for platform-specific PDF handling.
+
 - **Talk to the user in their own language.** All conversation, explanations, warnings, and reports follow it.
   Sample outputs in the skill files are written in Korean because that is what this repo was built against —
   they illustrate shape, not language.
